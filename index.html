@@ -52,9 +52,10 @@
         
         table { width: 100%; border-collapse: collapse; }
         th { background: rgba(0,0,0,0.2); padding: 12px; text-align: left; color: var(--text-dim); font-size: 0.7rem; text-transform: uppercase; }
-        td { padding: 12px 15px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        td { padding: 12px 15px; border-bottom: 1px solid rgba(255,255,255,0.05); vertical-align: middle; }
 
-        .time-col { color: var(--text-dim); width: 35%; font-size: 0.85rem; font-weight: 500; }
+        /* Increased width from 35% to 45% for the dual times */
+        .time-col { color: var(--text-dim); width: 45%; font-size: 0.8rem; font-weight: 500; white-space: nowrap; }
         .current-row { background: rgba(34, 197, 94, 0.2); border-left: 4px solid var(--highlight); }
 
         .event-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 15px; border-bottom: 1px solid rgba(255,255,255,0.05); }
@@ -143,25 +144,18 @@
     const startType = "A";
     let personalEvents = JSON.parse(localStorage.getItem('hunter-events')) || [];
 
-    // --- REMOTE SYNC LOGIC ---
     async function fetchGlobalEvents() {
         const url = "https://raw.githubusercontent.com/SaberAltered/MHS_SCHEDULE/main/events.json";
         try {
             const response = await fetch(url);
             if (!response.ok) return;
             const globalEvents = await response.json();
-            
-            // Merge global events with local ones, skipping duplicates
             const localIds = new Set(personalEvents.map(e => e.id));
             globalEvents.forEach(ge => {
-                if (!localIds.has(ge.id)) {
-                    personalEvents.push(ge);
-                }
+                if (!localIds.has(ge.id)) personalEvents.push(ge);
             });
             renderEvents();
-        } catch (e) {
-            console.log("Remote events load failed.");
-        }
+        } catch (e) { console.log("Remote events load failed."); }
     }
 
     function addPersonalEvent() {
@@ -189,10 +183,7 @@
         cardEl.style.display = 'block';
         listEl.innerHTML = personalEvents.map(e => `
             <div class="event-item">
-                <div class="event-info">
-                    <span style="font-size:0.9rem;">${e.name}</span>
-                    <span class="event-time">${e.time}</span>
-                </div>
+                <div class="event-info"><span style="font-size:0.9rem;">${e.name}</span><span class="event-time">${e.time}</span></div>
                 <button class="delete-btn" onclick="deleteEvent(${e.id})">×</button>
             </div>`).join('');
     }
@@ -257,10 +248,12 @@
 
         const list = isWeekend ? [] : schoolSchedule[type];
         const timeNow = now.getHours().toString().padStart(2, '0') + ":" + now.getMinutes().toString().padStart(2, '0');
+        
+        // This generates the schedule rows with START and END times
         let html = list.map(item => {
             const active = timeNow >= item.start && timeNow <= item.end;
             return `<tr class="${active ? 'current-row' : ''}">
-                <td class="time-col">${to12Hour(item.start)}</td>
+                <td class="time-col">${to12Hour(item.start)} - ${to12Hour(item.end)}</td>
                 <td>${item.name}${item.note ? `<span style="display:block; font-size:0.7rem; color:var(--text-dim); font-style:italic;">${item.note}</span>` : ''}</td>
             </tr>`;
         }).join('');
@@ -271,7 +264,7 @@
 
     applyTheme();
     renderEvents();
-    fetchGlobalEvents(); // Grabs your bobby's switch event
+    fetchGlobalEvents();
     update();
     setInterval(update, 1000);
 </script>
