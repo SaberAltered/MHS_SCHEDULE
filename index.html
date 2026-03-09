@@ -143,16 +143,14 @@
     const startType = "A";
     let personalEvents = JSON.parse(localStorage.getItem('hunter-events')) || [];
 
-    // --- UPDATED FETCH WITH CACHE BUSTER ---
+   
     async function fetchGlobalEvents() {
-        // Appending ?v=Date.now() forces a fresh copy from GitHub every time
         const url = "https://raw.githubusercontent.com/SaberAltered/MHS_SCHEDULE/main/events.json?v=" + Date.now();
         try {
             const response = await fetch(url);
             if (!response.ok) return;
             const globalEvents = await response.json();
-            
-            // Re-render personal events with global ones
+        
             const localIds = new Set(personalEvents.map(e => e.id));
             globalEvents.forEach(ge => {
                 if (!localIds.has(ge.id)) personalEvents.push(ge);
@@ -252,10 +250,8 @@
         const list = isWeekend ? [] : schoolSchedule[type];
         const timeNow = now.getHours().toString().padStart(2, '0') + ":" + now.getMinutes().toString().padStart(2, '0');
         
-        // --- UPDATED HIGHLIGHT LOGIC ---
         let hasHighlighted = false;
         let html = list.map(item => {
-            // Checks for single active class to prevent double-highlighting
             const active = timeNow >= item.start && timeNow < item.end && !hasHighlighted;
             if (active) hasHighlighted = true;
             
@@ -277,3 +273,4 @@
 </script>
 </body>
 </html>
+
