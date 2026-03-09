@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>A/B Day Tracker</title>
+
+<style>
+body{
+    font-family: Arial;
+    text-align:center;
+    margin-top:20%;
+}
+
+.day{
+    font-size:60px;
+    font-weight:bold;
+}
+
+.date{
+    font-size:25px;
+    margin-bottom:20px;
+}
+</style>
+
+</head>
+
+<body>
+
+<div class="date" id="date"></div>
+<div class="day" id="day"></div>
+
+<script>
+
+// CHANGE THIS TO A KNOWN DAY
+const startDate = new Date("2025-09-02");
+const startType = "A";
+
+// count school days (skip weekends)
+function schoolDaysBetween(start, end){
+
+    let count = 0;
+    let current = new Date(start);
+
+    while(current < end){
+        current.setDate(current.getDate()+1);
+
+        const day = current.getDay();
+
+        if(day !== 0 && day !== 6){
+            count++;
+        }
+    }
+
+    return count;
+}
+
+const today = new Date();
+
+const schoolDays = schoolDaysBetween(startDate, today);
+
+let todayType;
+
+if(schoolDays % 2 === 0){
+    todayType = startType;
+}else{
+    todayType = startType === "A" ? "B" : "A";
+}
+
+document.getElementById("day").innerHTML = todayType + " Day";
+
+document.getElementById("date").innerHTML =
+today.toDateString();
+
+</script>
+
+</body>
+</html>
