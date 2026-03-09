@@ -54,7 +54,6 @@
         th { background: rgba(0,0,0,0.2); padding: 12px; text-align: left; color: var(--text-dim); font-size: 0.7rem; text-transform: uppercase; }
         td { padding: 12px 15px; border-bottom: 1px solid rgba(255,255,255,0.05); vertical-align: middle; }
 
-        /* Increased width from 35% to 45% for the dual times */
         .time-col { color: var(--text-dim); width: 45%; font-size: 0.8rem; font-weight: 500; white-space: nowrap; }
         .current-row { background: rgba(34, 197, 94, 0.2); border-left: 4px solid var(--highlight); }
 
@@ -144,18 +143,22 @@
     const startType = "A";
     let personalEvents = JSON.parse(localStorage.getItem('hunter-events')) || [];
 
+    // --- UPDATED FETCH WITH CACHE BUSTER ---
     async function fetchGlobalEvents() {
-        const url = "https://raw.githubusercontent.com/SaberAltered/MHS_SCHEDULE/main/events.json";
+        // Appending ?v=Date.now() forces a fresh copy from GitHub every time
+        const url = "https://raw.githubusercontent.com/SaberAltered/MHS_SCHEDULE/main/events.json?v=" + Date.now();
         try {
             const response = await fetch(url);
             if (!response.ok) return;
             const globalEvents = await response.json();
+            
+            // Re-render personal events with global ones
             const localIds = new Set(personalEvents.map(e => e.id));
             globalEvents.forEach(ge => {
                 if (!localIds.has(ge.id)) personalEvents.push(ge);
             });
             renderEvents();
-        } catch (e) { console.log("Remote events load failed."); }
+        } catch (e) { console.log("Remote load failed."); }
     }
 
     function addPersonalEvent() {
@@ -249,9 +252,13 @@
         const list = isWeekend ? [] : schoolSchedule[type];
         const timeNow = now.getHours().toString().padStart(2, '0') + ":" + now.getMinutes().toString().padStart(2, '0');
         
-        // This generates the schedule rows with START and END times
+        // --- UPDATED HIGHLIGHT LOGIC ---
+        let hasHighlighted = false;
         let html = list.map(item => {
-            const active = timeNow >= item.start && timeNow <= item.end;
+            // Checks for single active class to prevent double-highlighting
+            const active = timeNow >= item.start && timeNow < item.end && !hasHighlighted;
+            if (active) hasHighlighted = true;
+            
             return `<tr class="${active ? 'current-row' : ''}">
                 <td class="time-col">${to12Hour(item.start)} - ${to12Hour(item.end)}</td>
                 <td>${item.name}${item.note ? `<span style="display:block; font-size:0.7rem; color:var(--text-dim); font-style:italic;">${item.note}</span>` : ''}</td>
