@@ -8,7 +8,7 @@ My own little calander designed for mobile and pc that shows what im doing throu
 
 ---
 
-## ✨ Key Features
+## Main features of my website
 * **A/B days based on the school calendar**
 * **Real-Time Sync**
 * **Custom Themes:** A settings menu in the bottom left to change background images and add local events.
@@ -16,7 +16,7 @@ My own little calander designed for mobile and pc that shows what im doing throu
 
 ---
 
-## 💻 Tech Stack
+## Technical Information
 * **Frontend:** HTML5, CSS3 (Modern Flexbox/Grid)
 * **Logic:** Vanilla JavaScript (Async/Fetch API)
 * **Hosting:** GitHub Pages
