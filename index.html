@@ -3,22 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MHS Schedule Tracker</title>
+    <title>Hunter's Special Schedule</title>
     <style>
         :root {
             --bg-color: #0f172a;
-            --card-bg: #1e293b;
+            --card-bg: rgba(30, 41, 59, 0.85);
             --text-main: #f8fafc;
             --text-dim: #94a3b8;
-            --accent-a: #f87171; /* A Day Red */
-            --accent-b: #60a5fa; /* B Day Blue */
+            --accent-a: #f87171; 
+            --accent-b: #60a5fa; 
             --highlight: #22c55e;
-            --robotics: #fbbf24; /* Robotics Gold */
+            --robotics: #fbbf24; 
+            --font-choice: 'Inter', sans-serif;
+            --bg-image: none;
         }
 
         body {
-            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            font-family: var(--font-choice);
             background-color: var(--bg-color);
+            background-image: var(--bg-image);
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
             color: var(--text-main);
             margin: 0;
             display: flex;
@@ -26,85 +32,116 @@
             align-items: center;
             min-height: 100vh;
             padding: 20px;
+            box-sizing: border-box;
         }
 
-        .header { text-align: center; margin-bottom: 20px; }
-        #date-display { color: var(--text-dim); font-size: 1rem; }
-        #day-display { font-size: 3.5rem; font-weight: 800; margin: 5px 0; }
-
-        /* Theme Switching */
-        .is-a #day-display { color: var(--accent-a); }
-        .is-b #day-display { color: var(--accent-b); }
-
-        .container {
-            width: 100%;
-            max-width: 500px;
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
+        body::before {
+            content: ""; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.3); z-index: -1; display: var(--overlay-display, none);
         }
 
-        .card {
-            background: var(--card-bg);
-            border-radius: 16px;
-            overflow: hidden;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
-        }
+        .header { text-align: center; margin-bottom: 10px; z-index: 1; }
+        .header h1 { font-size: 1.1rem; color: var(--text-dim); margin: 0; font-weight: 400; opacity: 0.8; }
+        #day-display { font-size: clamp(2rem, 8vw, 3.5rem); font-weight: 900; margin: 5px 0; text-transform: uppercase; }
 
+        .is-a #day-display { color: var(--accent-a); text-shadow: 0 0 15px rgba(248, 113, 113, 0.4); }
+        .is-b #day-display { color: var(--accent-b); text-shadow: 0 0 15px rgba(96, 165, 250, 0.4); }
+
+        .container { width: 100%; max-width: 500px; display: flex; flex-direction: column; gap: 15px; flex-grow: 1; z-index: 1; }
+        .card { background: var(--card-bg); border-radius: 16px; overflow: hidden; backdrop-filter: blur(10px); box-shadow: 0 10px 25px rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.05); }
+        
         table { width: 100%; border-collapse: collapse; }
-        th { background: rgba(0,0,0,0.2); padding: 12px; text-align: left; color: var(--text-dim); font-size: 0.75rem; text-transform: uppercase; }
-        td { padding: 15px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        th { background: rgba(0,0,0,0.2); padding: 12px; text-align: left; color: var(--text-dim); font-size: 0.7rem; text-transform: uppercase; }
+        td { padding: 12px 15px; border-bottom: 1px solid rgba(255,255,255,0.05); }
 
-        .time-col { color: var(--text-dim); width: 35%; font-size: 0.9rem; font-variant-numeric: tabular-nums; }
-        .note { display: block; font-size: 0.75rem; color: var(--text-dim); margin-top: 4px; font-style: italic; }
+        .time-col { color: var(--text-dim); width: 35%; font-size: 0.85rem; font-weight: 500; }
+        .current-row { background: rgba(34, 197, 94, 0.2); border-left: 4px solid var(--highlight); }
 
-        .current-row {
-            background: rgba(34, 197, 94, 0.1);
-            border-left: 4px solid var(--highlight);
-        }
-        .current-row .time-col { color: var(--highlight); font-weight: bold; }
+        /* Events Section */
+        .event-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 15px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .event-info { display: flex; flex-direction: column; }
+        .event-time { font-size: 0.75rem; color: var(--highlight); font-weight: bold; }
+        .delete-btn { background: none; border: none; color: #ef4444; cursor: pointer; font-size: 1.1rem; padding: 5px; }
 
-        .robotics-card {
-            border: 1px solid var(--robotics);
-            padding: 15px;
-            background: rgba(251, 191, 36, 0.05);
-            border-radius: 12px;
-            display: none; /* Hidden by default */
-        }
-        .robotics-card h3 { margin: 0; color: var(--robotics); font-size: 1rem; display: flex; align-items: center; gap: 8px; }
+        .footer { margin-top: 20px; text-align: center; padding-bottom: 20px; z-index: 1; }
+        #clock-display { font-size: 2.2rem; font-weight: 700; }
+        #date-display { font-size: 0.85rem; color: var(--text-dim); }
+
+        /* Settings UI */
+        #edit-btn { position: fixed; bottom: 20px; left: 20px; background: #1e293b; color: white; width: 45px; height: 45px; border-radius: 50%; cursor: pointer; border: none; z-index: 100; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
+        #settings-menu { position: fixed; bottom: 75px; left: 20px; background: #1e293b; padding: 20px; border-radius: 12px; display: none; flex-direction: column; gap: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1); z-index: 101; width: 260px; max-height: 70vh; overflow-y: auto; }
+        .setting-item { display: flex; flex-direction: column; gap: 5px; font-size: 0.8rem; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px; }
+        input, select { padding: 8px; border-radius: 6px; background: #0f172a; color: white; border: 1px solid #334155; font-size: 0.75rem; }
+        .add-event-row { display: flex; gap: 5px; }
     </style>
 </head>
 <body id="body-tag">
 
     <div class="header">
-        <div id="date-display"></div>
+        <h1>Hunter's Special Schedule</h1>
         <div id="day-display">Loading...</div>
     </div>
 
     <div class="container">
-        <div id="robotics-alert" class="robotics-card">
-            <h3>🤖 Robotics Today</h3>
-            <p id="robotics-time" style="margin: 5px 0 0 0; font-size: 0.9rem;"></p>
+        <div id="robotics-alert" class="card" style="display:none; padding:15px; border:1px solid var(--robotics); background:rgba(251, 191, 36, 0.1);">
+            <h3 style="margin:0; color:var(--robotics); font-size:0.9rem;">🤖 Robotics Today</h3>
+            <p id="robotics-time" style="margin: 5px 0 0 0; font-size: 0.8rem;"></p>
+        </div>
+
+        <div class="card" id="events-card" style="display:none;">
+            <div style="background: rgba(255,255,255,0.05); padding: 10px 15px; font-size: 0.7rem; text-transform: uppercase; color: var(--text-dim);">Tonight's Events</div>
+            <div id="events-list"></div>
         </div>
 
         <div class="card">
             <table>
-                <thead>
-                    <tr><th>Time</th><th>Class</th></tr>
-                </thead>
+                <thead><tr><th>Time</th><th>Class</th></tr></thead>
                 <tbody id="schedule-body"></tbody>
             </table>
         </div>
     </div>
 
+    <div class="footer">
+        <div id="clock-display"></div>
+        <div id="date-display"></div>
+    </div>
+
+    <button id="edit-btn" title="Edit Schedule/Theme">✎</button>
+
+    <div id="settings-menu">
+        <div class="setting-item">
+            <label style="font-weight: bold; color: var(--highlight);">+ Quick Add Event</label>
+            <input type="text" id="event-name" placeholder="What are you doing?">
+            <div class="add-event-row">
+                <input type="text" id="event-time-val" placeholder="Time (ex: 7 PM)" style="flex-grow:1;">
+                <button onclick="addPersonalEvent()" style="background:var(--highlight); color:white; border:none; padding:5px 10px; border-radius:4px; cursor:pointer;">Add</button>
+            </div>
+        </div>
+
+        <div class="setting-item">
+            <label>Background Image URL</label>
+            <input type="text" id="img-url" placeholder="Paste link here...">
+        </div>
+        
+        <div class="setting-item">
+            <label>Font Style</label>
+            <select id="font-picker">
+                <option value="'Inter', sans-serif">Standard</option>
+                <option value="'Courier New', monospace">Retro Code</option>
+                <option value="'Georgia', serif">Classic</option>
+            </select>
+        </div>
+        <button onclick="toggleMenu()" style="margin-top:5px; cursor:pointer; background: #334155; color: white; border: none; padding: 8px; border-radius: 4px;">Close Settings</button>
+    </div>
+
 <script>
-    const schedule = {
+    const schoolSchedule = {
         "A": [
             { name: "Forensics", start: "08:30", end: "09:55" },
-            { name: "PSP", start: "10:10", end: "11:35", note: "Mainly free time unless work is due" },
+            { name: "PSP", start: "10:10", end: "11:35", note: "Mainly free time" },
             { name: "US History", start: "11:50", end: "13:15" },
             { name: "Lunch", start: "13:15", end: "13:45" },
-            { name: "Work Experience", start: "14:00", end: "15:25", note: "School store - free unless customers arrive" }
+            { name: "Work Experience", start: "14:00", end: "15:25", note: "School store" }
         ],
         "B": [
             { name: "Welding", start: "08:30", end: "09:55" },
@@ -118,13 +155,87 @@
     const startDate = new Date("2025-09-02");
     const startType = "A";
 
+    // --- PERSONAL EVENTS LOGIC ---
+    let personalEvents = JSON.parse(localStorage.getItem('hunter-events')) || [];
+
+    function addPersonalEvent() {
+        const name = document.getElementById('event-name').value;
+        const time = document.getElementById('event-time-val').value;
+        if(name && time) {
+            personalEvents.push({ id: Date.now(), name, time });
+            localStorage.setItem('hunter-events', JSON.stringify(personalEvents));
+            document.getElementById('event-name').value = '';
+            document.getElementById('event-time-val').value = '';
+            renderEvents();
+        }
+    }
+
+    function deleteEvent(id) {
+        personalEvents = personalEvents.filter(e => e.id !== id);
+        localStorage.setItem('hunter-events', JSON.stringify(personalEvents));
+        renderEvents();
+    }
+
+    function renderEvents() {
+        const listEl = document.getElementById('events-list');
+        const cardEl = document.getElementById('events-card');
+        if(personalEvents.length === 0) {
+            cardEl.style.display = 'none';
+            return;
+        }
+        cardEl.style.display = 'block';
+        listEl.innerHTML = personalEvents.map(e => `
+            <div class="event-item">
+                <div class="event-info">
+                    <span style="font-size:0.9rem;">${e.name}</span>
+                    <span class="event-time">${e.time}</span>
+                </div>
+                <button class="delete-btn" onclick="deleteEvent(${e.id})">×</button>
+            </div>
+        `).join('');
+    }
+
+    // --- THEME LOGIC ---
+    function toggleMenu() {
+        const menu = document.getElementById('settings-menu');
+        menu.style.display = (menu.style.display === 'flex') ? 'none' : 'flex';
+    }
+    document.getElementById('edit-btn').onclick = toggleMenu;
+
+    document.getElementById('img-url').onchange = (e) => {
+        localStorage.setItem('hunter-img', e.target.value);
+        applyTheme();
+    };
+
+    document.getElementById('font-picker').onchange = (e) => {
+        localStorage.setItem('hunter-font', e.target.value);
+        applyTheme();
+    };
+
+    function applyTheme() {
+        const img = localStorage.getItem('hunter-img');
+        const font = localStorage.getItem('hunter-font') || "'Inter', sans-serif";
+        document.documentElement.style.setProperty('--font-choice', font);
+        if(img) {
+            document.documentElement.style.setProperty('--bg-image', `url('${img}')`);
+            document.documentElement.style.setProperty('--overlay-display', 'block');
+        }
+    }
+
+    // --- MAIN UPDATE LOOP ---
+    function to12Hour(time24) {
+        let [hrs, mins] = time24.split(':');
+        let period = hrs >= 12 ? 'PM' : 'AM';
+        hrs = hrs % 12 || 12;
+        return `${hrs}:${mins} ${period}`;
+    }
+
     function getDayType(date) {
         let count = 0;
         let cur = new Date(startDate);
         cur.setHours(0,0,0,0);
         let target = new Date(date);
         target.setHours(0,0,0,0);
-
         while (cur < target) {
             cur.setDate(cur.getDate() + 1);
             if (cur.getDay() !== 0 && cur.getDay() !== 6) count++;
@@ -134,51 +245,43 @@
 
     function update() {
         const now = new Date();
-        const dayOfWeek = now.getDay(); // 0=Sun, 2=Tue, 4=Thu, 6=Sat
+        const dayOfWeek = now.getDay();
         const type = getDayType(now);
         const isWeekend = (dayOfWeek === 0 || dayOfWeek === 6);
 
-        // Header
-        document.getElementById("date-display").innerText = now.toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' });
+        document.getElementById("clock-display").innerText = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        document.getElementById("date-display").innerText = now.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' });
         document.getElementById("day-display").innerText = isWeekend ? (dayOfWeek === 6 ? "Saturday" : "Sunday") : type + " Day";
         document.getElementById("body-tag").className = isWeekend ? "" : "is-" + type.toLowerCase();
 
-        // Robotics Logic
+        // Robotics
         const robAlert = document.getElementById("robotics-alert");
         const robTime = document.getElementById("robotics-time");
         if (dayOfWeek === 2 || dayOfWeek === 4) {
-            robAlert.style.display = "block";
-            robTime.innerText = "Meeting starts at 6:00 PM";
+            robAlert.style.display = "block"; robTime.innerText = "6:00 PM Meeting";
         } else if (dayOfWeek === 6) {
-            robAlert.style.display = "block";
-            robTime.innerText = "Workshop: 7:00 AM - 3:00 PM";
-        } else {
-            robAlert.style.display = "none";
-        }
+            robAlert.style.display = "block"; robTime.innerText = "Workshop: 7 AM - 3 PM";
+        } else { robAlert.style.display = "none"; }
 
-        // Schedule Logic
-        const list = isWeekend ? [] : schedule[type];
+        // Schedule
+        const list = isWeekend ? [] : schoolSchedule[type];
         const timeNow = now.getHours().toString().padStart(2, '0') + ":" + now.getMinutes().toString().padStart(2, '0');
-        
         let html = list.map(item => {
             const active = timeNow >= item.start && timeNow <= item.end;
             return `<tr class="${active ? 'current-row' : ''}">
-                <td class="time-col">${item.start} - ${item.end}</td>
-                <td>
-                    ${item.name}
-                    ${item.note ? `<span class="note">${item.note}</span>` : ''}
-                </td>
+                <td class="time-col">${to12Hour(item.start)}</td>
+                <td>${item.name}${item.note ? `<span style="display:block; font-size:0.7rem; color:var(--text-dim); font-style:italic;">${item.note}</span>` : ''}</td>
             </tr>`;
         }).join('');
 
-        if (isWeekend && dayOfWeek !== 6) html = "<tr><td colspan='2' style='text-align:center; color:var(--text-dim)'>No school today!</td></tr>";
-        if (dayOfWeek === 6) html = "<tr><td colspan='2' style='text-align:center; color:var(--text-dim)'>Check Robotics schedule above</td></tr>";
-
+        if (isWeekend && dayOfWeek !== 6) html = "<tr><td colspan='2' style='padding:30px; text-align:center; color:var(--text-dim)'>No school today!</td></tr>";
         document.getElementById("schedule-body").innerHTML = html;
     }
 
+    applyTheme();
+    renderEvents();
     update();
-    setInterval(update, 30000); // Check every 30 seconds
+    setInterval(update, 1000);
 </script>
 </body>
 </html>
