@@ -57,7 +57,6 @@
         .time-col { color: var(--text-dim); width: 35%; font-size: 0.85rem; font-weight: 500; }
         .current-row { background: rgba(34, 197, 94, 0.2); border-left: 4px solid var(--highlight); }
 
-        /* Events Section */
         .event-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 15px; border-bottom: 1px solid rgba(255,255,255,0.05); }
         .event-info { display: flex; flex-direction: column; }
         .event-time { font-size: 0.75rem; color: var(--highlight); font-weight: bold; }
@@ -67,12 +66,10 @@
         #clock-display { font-size: 2.2rem; font-weight: 700; }
         #date-display { font-size: 0.85rem; color: var(--text-dim); }
 
-        /* Settings UI */
         #edit-btn { position: fixed; bottom: 20px; left: 20px; background: #1e293b; color: white; width: 45px; height: 45px; border-radius: 50%; cursor: pointer; border: none; z-index: 100; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
         #settings-menu { position: fixed; bottom: 75px; left: 20px; background: #1e293b; padding: 20px; border-radius: 12px; display: none; flex-direction: column; gap: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1); z-index: 101; width: 260px; max-height: 70vh; overflow-y: auto; }
         .setting-item { display: flex; flex-direction: column; gap: 5px; font-size: 0.8rem; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px; }
         input, select { padding: 8px; border-radius: 6px; background: #0f172a; color: white; border: 1px solid #334155; font-size: 0.75rem; }
-        .add-event-row { display: flex; gap: 5px; }
     </style>
 </head>
 <body id="body-tag">
@@ -110,26 +107,16 @@
 
     <div id="settings-menu">
         <div class="setting-item">
-            <label style="font-weight: bold; color: var(--highlight);">+ Quick Add Event</label>
+            <label style="font-weight: bold; color: var(--highlight);">+ Quick Add Event (Local)</label>
             <input type="text" id="event-name" placeholder="What are you doing?">
-            <div class="add-event-row">
+            <div style="display:flex; gap:5px;">
                 <input type="text" id="event-time-val" placeholder="Time (ex: 7 PM)" style="flex-grow:1;">
                 <button onclick="addPersonalEvent()" style="background:var(--highlight); color:white; border:none; padding:5px 10px; border-radius:4px; cursor:pointer;">Add</button>
             </div>
         </div>
-
         <div class="setting-item">
             <label>Background Image URL</label>
             <input type="text" id="img-url" placeholder="Paste link here...">
-        </div>
-        
-        <div class="setting-item">
-            <label>Font Style</label>
-            <select id="font-picker">
-                <option value="'Inter', sans-serif">Standard</option>
-                <option value="'Courier New', monospace">Retro Code</option>
-                <option value="'Georgia', serif">Classic</option>
-            </select>
         </div>
         <button onclick="toggleMenu()" style="margin-top:5px; cursor:pointer; background: #334155; color: white; border: none; padding: 8px; border-radius: 4px;">Close Settings</button>
     </div>
@@ -154,9 +141,21 @@
 
     const startDate = new Date("2025-09-02");
     const startType = "A";
-
-    // --- PERSONAL EVENTS LOGIC ---
     let personalEvents = JSON.parse(localStorage.getItem('hunter-events')) || [];
+
+    // --- REMOTE SYNC LOGIC ---
+    async function fetchGlobalEvents() {
+        const url = "https://raw.githubusercontent.com/SaberAltered/MHS_SCHEDULE/main/events.json";
+        try {
+            const response = await fetch(url);
+            if (!response.ok) return;
+            const globalEvents = await response.json();
+            // Merge global and local events by ID to avoid duplicates
+            const allIds = new Set(personalEvents.map(e => e.id));
+            globalEvents.forEach(ge => { if(!allIds.has(ge.id)) personalEvents.push(ge); });
+            renderEvents();
+        } catch (e) { console.log("Remote events load failed."); }
+    }
 
     function addPersonalEvent() {
         const name = document.getElementById('event-name').value;
@@ -179,50 +178,33 @@
     function renderEvents() {
         const listEl = document.getElementById('events-list');
         const cardEl = document.getElementById('events-card');
-        if(personalEvents.length === 0) {
-            cardEl.style.display = 'none';
-            return;
-        }
+        if(personalEvents.length === 0) { cardEl.style.display = 'none'; return; }
         cardEl.style.display = 'block';
         listEl.innerHTML = personalEvents.map(e => `
             <div class="event-item">
-                <div class="event-info">
-                    <span style="font-size:0.9rem;">${e.name}</span>
-                    <span class="event-time">${e.time}</span>
-                </div>
+                <div class="event-info"><span style="font-size:0.9rem;">${e.name}</span><span class="event-time">${e.time}</span></div>
                 <button class="delete-btn" onclick="deleteEvent(${e.id})">×</button>
-            </div>
-        `).join('');
+            </div>`).join('');
     }
-
-    // --- THEME LOGIC ---
-    function toggleMenu() {
-        const menu = document.getElementById('settings-menu');
-        menu.style.display = (menu.style.display === 'flex') ? 'none' : 'flex';
-    }
-    document.getElementById('edit-btn').onclick = toggleMenu;
-
-    document.getElementById('img-url').onchange = (e) => {
-        localStorage.setItem('hunter-img', e.target.value);
-        applyTheme();
-    };
-
-    document.getElementById('font-picker').onchange = (e) => {
-        localStorage.setItem('hunter-font', e.target.value);
-        applyTheme();
-    };
 
     function applyTheme() {
         const img = localStorage.getItem('hunter-img');
-        const font = localStorage.getItem('hunter-font') || "'Inter', sans-serif";
-        document.documentElement.style.setProperty('--font-choice', font);
         if(img) {
             document.documentElement.style.setProperty('--bg-image', `url('${img}')`);
             document.documentElement.style.setProperty('--overlay-display', 'block');
         }
     }
 
-    // --- MAIN UPDATE LOOP ---
+    document.getElementById('edit-btn').onclick = () => {
+        const m = document.getElementById('settings-menu');
+        m.style.display = (m.style.display === 'flex') ? 'none' : 'flex';
+    };
+
+    document.getElementById('img-url').onchange = (e) => {
+        localStorage.setItem('hunter-img', e.target.value);
+        applyTheme();
+    };
+
     function to12Hour(time24) {
         let [hrs, mins] = time24.split(':');
         let period = hrs >= 12 ? 'PM' : 'AM';
@@ -254,7 +236,6 @@
         document.getElementById("day-display").innerText = isWeekend ? (dayOfWeek === 6 ? "Saturday" : "Sunday") : type + " Day";
         document.getElementById("body-tag").className = isWeekend ? "" : "is-" + type.toLowerCase();
 
-        // Robotics
         const robAlert = document.getElementById("robotics-alert");
         const robTime = document.getElementById("robotics-time");
         if (dayOfWeek === 2 || dayOfWeek === 4) {
@@ -263,7 +244,6 @@
             robAlert.style.display = "block"; robTime.innerText = "Workshop: 7 AM - 3 PM";
         } else { robAlert.style.display = "none"; }
 
-        // Schedule
         const list = isWeekend ? [] : schoolSchedule[type];
         const timeNow = now.getHours().toString().padStart(2, '0') + ":" + now.getMinutes().toString().padStart(2, '0');
         let html = list.map(item => {
@@ -280,6 +260,7 @@
 
     applyTheme();
     renderEvents();
+    fetchGlobalEvents();
     update();
     setInterval(update, 1000);
 </script>
