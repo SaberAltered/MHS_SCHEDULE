@@ -150,11 +150,18 @@
             const response = await fetch(url);
             if (!response.ok) return;
             const globalEvents = await response.json();
-            // Merge global and local events by ID to avoid duplicates
-            const allIds = new Set(personalEvents.map(e => e.id));
-            globalEvents.forEach(ge => { if(!allIds.has(ge.id)) personalEvents.push(ge); });
+            
+            // Merge global events with local ones, skipping duplicates
+            const localIds = new Set(personalEvents.map(e => e.id));
+            globalEvents.forEach(ge => {
+                if (!localIds.has(ge.id)) {
+                    personalEvents.push(ge);
+                }
+            });
             renderEvents();
-        } catch (e) { console.log("Remote events load failed."); }
+        } catch (e) {
+            console.log("Remote events load failed.");
+        }
     }
 
     function addPersonalEvent() {
@@ -182,7 +189,10 @@
         cardEl.style.display = 'block';
         listEl.innerHTML = personalEvents.map(e => `
             <div class="event-item">
-                <div class="event-info"><span style="font-size:0.9rem;">${e.name}</span><span class="event-time">${e.time}</span></div>
+                <div class="event-info">
+                    <span style="font-size:0.9rem;">${e.name}</span>
+                    <span class="event-time">${e.time}</span>
+                </div>
                 <button class="delete-btn" onclick="deleteEvent(${e.id})">×</button>
             </div>`).join('');
     }
@@ -195,11 +205,12 @@
         }
     }
 
-    document.getElementById('edit-btn').onclick = () => {
-        const m = document.getElementById('settings-menu');
-        m.style.display = (m.style.display === 'flex') ? 'none' : 'flex';
-    };
+    function toggleMenu() {
+        const menu = document.getElementById('settings-menu');
+        menu.style.display = (menu.style.display === 'flex') ? 'none' : 'flex';
+    }
 
+    document.getElementById('edit-btn').onclick = toggleMenu;
     document.getElementById('img-url').onchange = (e) => {
         localStorage.setItem('hunter-img', e.target.value);
         applyTheme();
@@ -241,7 +252,7 @@
         if (dayOfWeek === 2 || dayOfWeek === 4) {
             robAlert.style.display = "block"; robTime.innerText = "6:00 PM Meeting";
         } else if (dayOfWeek === 6) {
-            robAlert.style.display = "block"; robTime.innerText = "Workshop: 7 AM - 3 PM";
+            robAlert.style.display = "block"; robTime.innerText = "Workshop: 7:00 AM - 3:00 PM";
         } else { robAlert.style.display = "none"; }
 
         const list = isWeekend ? [] : schoolSchedule[type];
@@ -260,7 +271,7 @@
 
     applyTheme();
     renderEvents();
-    fetchGlobalEvents();
+    fetchGlobalEvents(); // Grabs your bobby's switch event
     update();
     setInterval(update, 1000);
 </script>
