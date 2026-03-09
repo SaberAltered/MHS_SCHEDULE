@@ -1,21 +1,12 @@
-// Add this inside your <script> tag:
-
-async function fetchGlobalEvents() {
-    // REPLACE 'SaberAltered' and 'MHS_SCHEDULE' with your actual info!
-    const url = "https://raw.githubusercontent.com/SaberAltered/MHS_SCHEDULE/main/events.json";
-
-    try {
-        const response = await fetch(url);
-        if (!response.ok) return;
-        const globalEvents = await response.json();
-        
-        // This merges your local phone-only events with the ones from GitHub
-        const combinedEvents = [...personalEvents, ...globalEvents];
-        renderEvents(combinedEvents);
-    } catch (e) {
-        console.log("No global events found or URL is wrong.");
-    }
-}
-
-// Call this when the page loads
-fetchGlobalEvents();
+[
+  {
+    "id": 1710000000000,
+    "name": "Working on bobbys switch",
+    "time": "7:00 PM"
+  },
+  {
+    "id": 1710000000001,
+    "name": "Check Robotics Schedule",
+    "time": "Tomorrow"
+  }
+]
