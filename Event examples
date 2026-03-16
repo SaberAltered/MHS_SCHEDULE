@@ -1,0 +1,19 @@
+[
+  {
+    "id": 1710000000000,
+    "name": "MULTIPLE EXAMPLE 1",
+    "time": "7:00 PM"
+  },
+  {
+    "id": 1710000000001,
+    "name": "Mulitple EXAMPLE 2",
+    "time": "3:45pm to 6:00pm"
+  },
+
+  BUT IF ITS SINGLE
+  {
+    "id": 1710000000002,
+    "name": "SINGLE EXAMPLE ONE",
+    "time": "8:00pm-10:00pm"
+  }
+]
