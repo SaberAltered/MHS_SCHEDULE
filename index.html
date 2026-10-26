@@ -122,6 +122,7 @@
     </div>
 
 <script>
+    // UPDATE THESE CLASSES IF YOUR 26-27 SCHEDULE CHANGED
     const schoolSchedule = {
         "A": [
             { name: "Community Release", start: "08:30", end: "09:55", note: "First block" },
@@ -139,8 +140,20 @@
         ]
     };
 
-    const startDate = new Date("2025-09-02");
+    // 2026-2027 Calendar Start Date
+    const startDate = new Date("2026-08-31T00:00:00");
     const startType = "A";
+    
+    // No School days that disrupt the A/B rotation
+    const holidays = [
+        "2026-09-04", "2026-09-07", "2026-09-25",
+        "2026-10-15", "2026-10-16", "2026-11-09",
+        "2026-11-25", "2026-11-26", "2026-11-27",
+        "2026-12-23", "2026-12-24", "2026-12-25", "2026-12-28", "2026-12-29", "2026-12-30", "2026-12-31",
+        "2027-01-01", "2027-01-18", "2027-02-15",
+        "2027-03-08", "2027-03-09", "2027-03-26", "2027-03-29", "2027-04-23"
+    ];
+
     let personalEvents = JSON.parse(localStorage.getItem('hunter-events')) || [];
 
     async function fetchGlobalEvents() {
@@ -214,15 +227,25 @@
         return `${hrs}:${mins} ${period}`;
     }
 
+    // UPDATED A/B DAY CALCULATOR
     function getDayType(date) {
         let count = 0;
         let cur = new Date(startDate);
         cur.setHours(0,0,0,0);
         let target = new Date(date);
         target.setHours(0,0,0,0);
+        
+        // Loop from start date to target date to count valid school days
         while (cur < target) {
+            // Adjust for local timezone date formatting
+            let offsetDate = new Date(cur.getTime() - (cur.getTimezoneOffset() * 60000));
+            let dateStr = offsetDate.toISOString().split('T')[0];
+            
+            // Skip weekends and holidays
+            if (cur.getDay() !== 0 && cur.getDay() !== 6 && !holidays.includes(dateStr)) {
+                count++;
+            }
             cur.setDate(cur.getDate() + 1);
-            if (cur.getDay() !== 0 && cur.getDay() !== 6) count++;
         }
         return (count % 2 === 0) ? startType : (startType === "A" ? "B" : "A");
     }
@@ -230,13 +253,27 @@
     function update() {
         const now = new Date();
         const dayOfWeek = now.getDay();
-        const type = getDayType(now);
+        const offsetDate = new Date(now.getTime() - (now.getTimezoneOffset() * 60000));
+        const todayStr = offsetDate.toISOString().split('T')[0];
+        
         const isWeekend = (dayOfWeek === 0 || dayOfWeek === 6);
+        const isHoliday = holidays.includes(todayStr);
+        
+        const type = getDayType(now);
 
         document.getElementById("clock-display").innerText = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
         document.getElementById("date-display").innerText = now.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' });
-        document.getElementById("day-display").innerText = isWeekend ? (dayOfWeek === 6 ? "Saturday" : "Sunday") : type + " Day";
-        document.getElementById("body-tag").className = isWeekend ? "" : "is-" + type.toLowerCase();
+        
+        if (isWeekend) {
+            document.getElementById("day-display").innerText = dayOfWeek === 6 ? "Saturday" : "Sunday";
+            document.getElementById("body-tag").className = "";
+        } else if (isHoliday) {
+            document.getElementById("day-display").innerText = "No School";
+            document.getElementById("body-tag").className = "";
+        } else {
+            document.getElementById("day-display").innerText = type + " Day";
+            document.getElementById("body-tag").className = "is-" + type.toLowerCase();
+        }
 
         const robAlert = document.getElementById("robotics-alert");
         const robTime = document.getElementById("robotics-time");
@@ -246,21 +283,25 @@
             robAlert.style.display = "block"; robTime.innerText = "Workshop: 7:00 AM - 3:00 PM";
         } else { robAlert.style.display = "none"; }
 
-        const list = isWeekend ? [] : schoolSchedule[type];
-        const timeNow = now.getHours().toString().padStart(2, '0') + ":" + now.getMinutes().toString().padStart(2, '0');
-        
-        let hasHighlighted = false;
-        let html = list.map(item => {
-            const active = timeNow >= item.start && timeNow < item.end && !hasHighlighted;
-            if (active) hasHighlighted = true;
+        let html = "";
+        if (isWeekend || isHoliday) {
+            html = `<tr><td colspan='2' style='padding:30px; text-align:center; color:var(--text-dim)'>${isHoliday ? "Holiday / No Classes" : "No school today!"}</td></tr>`;
+        } else {
+            const list = schoolSchedule[type];
+            const timeNow = now.getHours().toString().padStart(2, '0') + ":" + now.getMinutes().toString().padStart(2, '0');
             
-            return `<tr class="${active ? 'current-row' : ''}">
-                <td class="time-col">${to12Hour(item.start)} - ${to12Hour(item.end)}</td>
-                <td>${item.name}${item.note ? `<span style="display:block; font-size:0.7rem; color:var(--text-dim); font-style:italic;">${item.note}</span>` : ''}</td>
-            </tr>`;
-        }).join('');
-
-        if (isWeekend && dayOfWeek !== 6) html = "<tr><td colspan='2' style='padding:30px; text-align:center; color:var(--text-dim)'>No school today!</td></tr>";
+            let hasHighlighted = false;
+            html = list.map(item => {
+                const active = timeNow >= item.start && timeNow < item.end && !hasHighlighted;
+                if (active) hasHighlighted = true;
+                
+                return `<tr class="${active ? 'current-row' : ''}">
+                    <td class="time-col">${to12Hour(item.start)} - ${to12Hour(item.end)}</td>
+                    <td>${item.name}${item.note ? `<span style="display:block; font-size:0.7rem; color:var(--text-dim); font-style:italic;">${item.note}</span>` : ''}</td>
+                </tr>`;
+            }).join('');
+        }
+        
         document.getElementById("schedule-body").innerHTML = html;
     }
 
