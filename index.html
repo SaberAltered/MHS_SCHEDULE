@@ -5,19 +5,27 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hunter's Special Schedule</title>
     <style>
+        /* =========================================
+           SECTION 1: THEME & COLORS (EDIT THESE!)
+        ========================================= */
         :root {
-            --bg-color: #0f172a;
-            --card-bg: rgba(30, 41, 59, 0.85);
-            --text-main: #f8fafc;
-            --text-dim: #94a3b8;
-            --accent-a: #f87171; 
-            --accent-b: #60a5fa; 
-            --highlight: #22c55e;
-            --robotics: #fbbf24; 
+            /* Halloween Theme Colors */
+            --bg-color: #050505;          /* Pitch black night */
+            --card-bg: rgba(30, 15, 45, 0.85); /* Deep haunted purple */
+            --text-main: #f3f4f6;         /* Ghostly white */
+            --text-dim: #d8b4fe;          /* Faded witch purple */
+            --accent-a: #f97316;          /* Pumpkin Orange for A Days */
+            --accent-b: #a855f7;          /* Mystic Purple for B Days */
+            --highlight: #84cc16;         /* Toxic Slime Green for active class */
+            --robotics: #ef4444;          /* Blood Red for Robotics */
+            
             --font-choice: 'Inter', sans-serif;
             --bg-image: none;
         }
 
+        /* =========================================
+           SECTION 2: CORE LAYOUT & TYPOGRAPHY
+        ========================================= */
         body {
             font-family: var(--font-choice);
             background-color: var(--bg-color);
@@ -26,70 +34,78 @@
             background-position: center;
             background-attachment: fixed;
             color: var(--text-main);
-            margin: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            min-height: 100vh;
-            padding: 20px;
-            box-sizing: border-box;
+            margin: 0; display: flex; flex-direction: column; align-items: center;
+            min-height: 100vh; padding: 20px; box-sizing: border-box;
         }
-
+        
         body::before {
             content: ""; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.3); z-index: -1; display: var(--overlay-display, none);
+            background: rgba(0,0,0,0.5); z-index: -1; display: var(--overlay-display, none);
         }
 
         .header { text-align: center; margin-bottom: 10px; z-index: 1; }
-        .header h1 { font-size: 1.1rem; color: var(--text-dim); margin: 0; font-weight: 400; opacity: 0.8; }
+        .header h1 { font-size: 1.1rem; color: var(--text-dim); margin: 0; font-weight: 400; opacity: 0.8; letter-spacing: 2px; }
         #day-display { font-size: clamp(2rem, 8vw, 3.5rem); font-weight: 900; margin: 5px 0; text-transform: uppercase; }
 
-        .is-a #day-display { color: var(--accent-a); text-shadow: 0 0 15px rgba(248, 113, 113, 0.4); }
-        .is-b #day-display { color: var(--accent-b); text-shadow: 0 0 15px rgba(96, 165, 250, 0.4); }
+        .is-a #day-display { color: var(--accent-a); text-shadow: 0 0 20px rgba(249, 115, 22, 0.5); }
+        .is-b #day-display { color: var(--accent-b); text-shadow: 0 0 20px rgba(168, 85, 247, 0.5); }
 
         .container { width: 100%; max-width: 500px; display: flex; flex-direction: column; gap: 15px; flex-grow: 1; z-index: 1; }
-        .card { background: var(--card-bg); border-radius: 16px; overflow: hidden; backdrop-filter: blur(10px); box-shadow: 0 10px 25px rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.05); }
+        .card { background: var(--card-bg); border-radius: 16px; overflow: hidden; backdrop-filter: blur(10px); box-shadow: 0 10px 30px rgba(0,0,0,0.7); border: 1px solid rgba(255,255,255,0.05); }
         
+        /* =========================================
+           SECTION 3: TABLES & EVENT LISTS
+        ========================================= */
         table { width: 100%; border-collapse: collapse; }
-        th { background: rgba(0,0,0,0.2); padding: 12px; text-align: left; color: var(--text-dim); font-size: 0.7rem; text-transform: uppercase; }
+        th { background: rgba(0,0,0,0.4); padding: 12px; text-align: left; color: var(--text-dim); font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; }
         td { padding: 12px 15px; border-bottom: 1px solid rgba(255,255,255,0.05); vertical-align: middle; }
 
         .time-col { color: var(--text-dim); width: 45%; font-size: 0.8rem; font-weight: 500; white-space: nowrap; }
-        .current-row { background: rgba(34, 197, 94, 0.2); border-left: 4px solid var(--highlight); }
+        .current-row { background: rgba(132, 204, 22, 0.15); border-left: 4px solid var(--highlight); }
 
         .event-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 15px; border-bottom: 1px solid rgba(255,255,255,0.05); }
         .event-info { display: flex; flex-direction: column; }
         .event-time { font-size: 0.75rem; color: var(--highlight); font-weight: bold; }
         .delete-btn { background: none; border: none; color: #ef4444; cursor: pointer; font-size: 1.1rem; padding: 5px; }
 
+        /* =========================================
+           SECTION 4: FOOTER & MENUS
+        ========================================= */
         .footer { margin-top: 20px; text-align: center; padding-bottom: 20px; z-index: 1; }
-        #clock-display { font-size: 2.2rem; font-weight: 700; }
+        #clock-display { font-size: 2.2rem; font-weight: 700; text-shadow: 0 0 10px rgba(255,255,255,0.2); }
         #date-display { font-size: 0.85rem; color: var(--text-dim); }
 
-        #edit-btn { position: fixed; bottom: 20px; left: 20px; background: #1e293b; color: white; width: 45px; height: 45px; border-radius: 50%; cursor: pointer; border: none; z-index: 100; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
-        #settings-menu { position: fixed; bottom: 75px; left: 20px; background: #1e293b; padding: 20px; border-radius: 12px; display: none; flex-direction: column; gap: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1); z-index: 101; width: 260px; max-height: 70vh; overflow-y: auto; }
+        #edit-btn { position: fixed; bottom: 20px; left: 20px; background: #1e1b4b; color: var(--text-main); width: 45px; height: 45px; border-radius: 50%; cursor: pointer; border: 1px solid var(--text-dim); z-index: 100; box-shadow: 0 4px 10px rgba(0,0,0,0.8); }
+        #settings-menu { position: fixed; bottom: 75px; left: 20px; background: #1e1b4b; padding: 20px; border-radius: 12px; display: none; flex-direction: column; gap: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.8); border: 1px solid rgba(255,255,255,0.1); z-index: 101; width: 260px; max-height: 70vh; overflow-y: auto; }
         .setting-item { display: flex; flex-direction: column; gap: 5px; font-size: 0.8rem; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px; }
-        input, select { padding: 8px; border-radius: 6px; background: #0f172a; color: white; border: 1px solid #334155; font-size: 0.75rem; }
+        input, select { padding: 8px; border-radius: 6px; background: #050505; color: white; border: 1px solid #3b0764; font-size: 0.75rem; outline: none; }
+        input:focus { border-color: var(--accent-a); }
     </style>
 </head>
 <body id="body-tag">
 
+    <!-- =========================================
+         SECTION 5: HTML STRUCTURE
+    ========================================= -->
     <div class="header">
-        <h1>Hunter's Special Schedule</h1>
+        <h1>Hunter's Schedule</h1>
         <div id="day-display">Loading...</div>
     </div>
 
     <div class="container">
-        <div id="robotics-alert" class="card" style="display:none; padding:15px; border:1px solid var(--robotics); background:rgba(251, 191, 36, 0.1);">
-            <h3 style="margin:0; color:var(--robotics); font-size:0.9rem;">🤖 Robotics Today</h3>
+        <!-- Robotics Alert -->
+        <div id="robotics-alert" class="card" style="display:none; padding:15px; border:1px solid var(--robotics); background:rgba(239, 68, 68, 0.1);">
+            <h3 style="margin:0; color:var(--robotics); font-size:0.9rem;">🎃 Robotics Today</h3>
             <p id="robotics-time" style="margin: 5px 0 0 0; font-size: 0.8rem;"></p>
         </div>
 
+        <!-- Evening Events List -->
         <div class="card" id="events-card" style="display:none;">
-            <div style="background: rgba(255,255,255,0.05); padding: 10px 15px; font-size: 0.7rem; text-transform: uppercase; color: var(--text-dim);">Tonight's Events</div>
+            <div style="background: rgba(0,0,0,0.3); padding: 10px 15px; font-size: 0.7rem; text-transform: uppercase; color: var(--text-dim); letter-spacing: 1px;">Tonight's Tasks</div>
             <div id="events-list"></div>
         </div>
 
+        <!-- Main Schedule Table -->
         <div class="card">
             <table>
                 <thead><tr><th>Time</th><th>Class</th></tr></thead>
@@ -103,26 +119,28 @@
         <div id="date-display"></div>
     </div>
 
+    <!-- Settings & Quick Add -->
     <button id="edit-btn" title="Edit Schedule/Theme">✎</button>
-
     <div id="settings-menu">
         <div class="setting-item">
             <label style="font-weight: bold; color: var(--highlight);">+ Quick Add Event (Local)</label>
             <input type="text" id="event-name" placeholder="What are you doing?">
             <div style="display:flex; gap:5px;">
                 <input type="text" id="event-time-val" placeholder="Time (ex: 7 PM)" style="flex-grow:1;">
-                <button onclick="addPersonalEvent()" style="background:var(--highlight); color:white; border:none; padding:5px 10px; border-radius:4px; cursor:pointer;">Add</button>
+                <button onclick="addPersonalEvent()" style="background:var(--highlight); color:#000; font-weight:bold; border:none; padding:5px 10px; border-radius:4px; cursor:pointer;">Add</button>
             </div>
         </div>
         <div class="setting-item">
-            <label>Background Image URL</label>
+            <label style="color: var(--text-dim);">Background Image URL</label>
             <input type="text" id="img-url" placeholder="Paste link here...">
         </div>
-        <button onclick="toggleMenu()" style="margin-top:5px; cursor:pointer; background: #334155; color: white; border: none; padding: 8px; border-radius: 4px;">Close Settings</button>
+        <button onclick="toggleMenu()" style="margin-top:5px; cursor:pointer; background: #3b0764; color: white; border: none; padding: 8px; border-radius: 4px;">Close Settings</button>
     </div>
 
 <script>
-    // UPDATE THESE CLASSES IF YOUR 26-27 SCHEDULE CHANGED
+    /* =========================================
+       SECTION 6: SCHEDULE CONFIGURATION
+    ========================================= */
     const schoolSchedule = {
         "A": [
             { name: "Community Release", start: "08:30", end: "09:55", note: "First block" },
@@ -140,11 +158,11 @@
         ]
     };
 
-    // 2026-2027 Calendar Start Date
+    // 2026-2027 District Calendar Rules
     const startDate = new Date("2026-08-31T00:00:00");
     const startType = "A";
     
-    // No School days that disrupt the A/B rotation
+    // Non-school days where the A/B rotation pauses
     const holidays = [
         "2026-09-04", "2026-09-07", "2026-09-25",
         "2026-10-15", "2026-10-16", "2026-11-09",
@@ -154,6 +172,9 @@
         "2027-03-08", "2027-03-09", "2027-03-26", "2027-03-29", "2027-04-23"
     ];
 
+    /* =========================================
+       SECTION 7: DATA & EVENT LOGIC
+    ========================================= */
     let personalEvents = JSON.parse(localStorage.getItem('hunter-events')) || [];
 
     async function fetchGlobalEvents() {
@@ -201,6 +222,9 @@
             </div>`).join('');
     }
 
+    /* =========================================
+       SECTION 8: CORE ENGINE & RENDERING
+    ========================================= */
     function applyTheme() {
         const img = localStorage.getItem('hunter-img');
         if(img) {
@@ -227,7 +251,6 @@
         return `${hrs}:${mins} ${period}`;
     }
 
-    // UPDATED A/B DAY CALCULATOR
     function getDayType(date) {
         let count = 0;
         let cur = new Date(startDate);
@@ -235,16 +258,11 @@
         let target = new Date(date);
         target.setHours(0,0,0,0);
         
-        // Loop from start date to target date to count valid school days
         while (cur < target) {
-            // Adjust for local timezone date formatting
             let offsetDate = new Date(cur.getTime() - (cur.getTimezoneOffset() * 60000));
             let dateStr = offsetDate.toISOString().split('T')[0];
             
-            // Skip weekends and holidays
-            if (cur.getDay() !== 0 && cur.getDay() !== 6 && !holidays.includes(dateStr)) {
-                count++;
-            }
+            if (cur.getDay() !== 0 && cur.getDay() !== 6 && !holidays.includes(dateStr)) { count++; }
             cur.setDate(cur.getDate() + 1);
         }
         return (count % 2 === 0) ? startType : (startType === "A" ? "B" : "A");
@@ -258,9 +276,9 @@
         
         const isWeekend = (dayOfWeek === 0 || dayOfWeek === 6);
         const isHoliday = holidays.includes(todayStr);
-        
         const type = getDayType(now);
 
+        // Update Clocks & Headers
         document.getElementById("clock-display").innerText = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
         document.getElementById("date-display").innerText = now.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' });
         
@@ -275,14 +293,18 @@
             document.getElementById("body-tag").className = "is-" + type.toLowerCase();
         }
 
+        // Robotics Schedule Display
         const robAlert = document.getElementById("robotics-alert");
         const robTime = document.getElementById("robotics-time");
         if (dayOfWeek === 2 || dayOfWeek === 4) {
             robAlert.style.display = "block"; robTime.innerText = "6:00 PM Meeting";
         } else if (dayOfWeek === 6) {
             robAlert.style.display = "block"; robTime.innerText = "Workshop: 7:00 AM - 3:00 PM";
-        } else { robAlert.style.display = "none"; }
+        } else { 
+            robAlert.style.display = "none"; 
+        }
 
+        // Class Schedule Table Rendering
         let html = "";
         if (isWeekend || isHoliday) {
             html = `<tr><td colspan='2' style='padding:30px; text-align:center; color:var(--text-dim)'>${isHoliday ? "Holiday / No Classes" : "No school today!"}</td></tr>`;
@@ -305,6 +327,9 @@
         document.getElementById("schedule-body").innerHTML = html;
     }
 
+    /* =========================================
+       SECTION 9: INITIALIZATION
+    ========================================= */
     applyTheme();
     renderEvents();
     fetchGlobalEvents();
