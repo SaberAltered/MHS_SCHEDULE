@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hunter's Social Board</title>
+    <style>
+        :root {
+            --bg-color: #050505;          
+            --card-bg: rgba(30, 15, 45, 0.85); 
+            --text-main: #f3f4f6;         
+            --text-dim: #d8b4fe;          
+            --accent-a: #f97316;          
+            --accent-b: #a855f7;          
+            --highlight: #84cc16;         
+            --font-choice: 'Inter', sans-serif;
+            --bg-image: none;
+        }
+
+        body {
+            font-family: var(--font-choice);
+            background-color: var(--bg-color);
+            background-image: var(--bg-image);
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            color: var(--text-main);
+            margin: 0; display: flex; flex-direction: column; align-items: center;
+            min-height: 100vh; padding: 20px; box-sizing: border-box;
+        }
+
+        .header { text-align: center; margin-bottom: 20px; z-index: 1; }
+        .header h1 { font-size: 2.2rem; color: var(--accent-b); margin: 0; font-weight: 900; text-transform: uppercase; text-shadow: 0 0 20px rgba(168, 85, 247, 0.5); }
+        .header p { color: var(--text-dim); margin-top: 5px; font-size: 0.9rem; letter-spacing: 1px; }
+
+        .container { width: 100%; max-width: 500px; display: flex; flex-direction: column; gap: 20px; flex-grow: 1; z-index: 1; }
+        .card { background: var(--card-bg); border-radius: 16px; padding: 20px; backdrop-filter: blur(10px); box-shadow: 0 10px 30px rgba(0,0,0,0.7); border: 1px solid rgba(255,255,255,0.05); }
+        
+        .section-title { font-size: 0.8rem; text-transform: uppercase; color: var(--highlight); margin-bottom: 15px; letter-spacing: 1px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px; }
+
+        /* Update Log Styling */
+        .update-post { margin-bottom: 15px; }
+        .update-date { font-size: 0.7rem; color: var(--text-dim); display: block; margin-bottom: 3px; }
+        .update-text { font-size: 0.9rem; line-height: 1.4; color: var(--text-main); }
+
+        /* Button Links */
+        .link-grid { display: flex; flex-direction: column; gap: 10px; }
+        .social-btn { display: flex; align-items: center; justify-content: center; gap: 10px; padding: 12px; border-radius: 8px; text-decoration: none; font-weight: bold; transition: 0.2s; border: 1px solid transparent; }
+        
+        .btn-twitch { background: #6441a5; color: white; }
+        .btn-twitch:hover { background: #4a2a82; border-color: var(--text-main); }
+        
+        .btn-youtube { background: #ff0000; color: white; }
+        .btn-youtube:hover { background: #cc0000; border-color: var(--text-main); }
+
+        /* Navigation */
+        .nav-btn { display: inline-block; margin-top: 20px; padding: 10px 20px; background: #1e1b4b; color: var(--text-main); text-decoration: none; border-radius: 8px; border: 1px solid var(--text-dim); font-size: 0.85rem; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
+        .nav-btn:hover { border-color: var(--accent-a); color: var(--accent-a); }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>Astral Archive</h1>
+        <p>The Armory & Social Board</p>
+    </div>
+
+    <div class="container">
+        
+        <!-- PERSONAL UPDATES SECTION -->
+        <div class="card">
+            <div class="section-title">Transmission Log</div>
+            
+            <div class="update-post">
+                <span class="update-date">October 26, 2026</span>
+                <div class="update-text">Currently hardening CachyOS on the project laptop and setting up UFW rules for public networks. Robotics workshop on the horizon.</div>
+            </div>
+            
+            <div class="update-post">
+                <span class="update-date">October 24, 2026</span>
+                <div class="update-text">Successfully installed the Projectivy launcher to debloat the Google TV. The interface is much cleaner now.</div>
+            </div>
+        </div>
+
+        <!-- SPOTIFY MUSIC SECTION -->
+        <div class="card">
+            <div class="section-title">Current Rotation</div>
+            <!-- To get your own Spotify embed code: Go to a song/playlist in Spotify -> Share -> Embed playlist -> Copy code -->
+            <iframe style="border-radius:12px" src="https://open.spotify.com/embed/playlist/37i9dQZF1DXcBWIGoYBM5M?utm_source=generator&theme=0" width="100%" height="152" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
+        </div>
+
+        <!-- SOCIAL LINKS SECTION -->
+        <div class="card">
+            <div class="section-title">Network Links</div>
+            <div class="link-grid">
+                <!-- Replace the '#' with your actual URLs -->
+                <a href="#" class="social-btn btn-twitch">🎮 Follow on Twitch</a>
+                <a href="#" class="social-btn btn-youtube">📺 Subscribe on YouTube</a>
+            </div>
+        </div>
+
+        <a href="index.html" class="nav-btn">🔙 Return to Main Schedule</a>
+
+    </div>
+
+</body>
+</html>
