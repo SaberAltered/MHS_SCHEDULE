@@ -1,0 +1,9 @@
+# Ignore specific file
+CNAME
+events.json
+
+# Ignore all .env files
+*.env
+
+# Ignore entire directory
+node_modules/   
