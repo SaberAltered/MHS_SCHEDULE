@@ -1,0 +1,1011 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Chatbot Playground: Rule-Based vs. LLM</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    pre, code, .font-mono { font-family: 'JetBrains Mono', monospace; }
+    /* Custom scrollbars */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #0f172a; }
+    ::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: #475569; }
+    /* Syntax highlighting token classes */
+    .syn-k { color: #c678dd; font-weight: 600; } /* Keyword */
+    .syn-t { color: #e5c07b; } /* Type / Class */
+    .syn-f { color: #61afef; } /* Function / Method */
+    .syn-s { color: #98c379; } /* String */
+    .syn-c { color: #64748b; font-style: italic; } /* Comment */
+    .syn-n { color: #d19a66; } /* Number / Constant */
+    .syn-p { color: #abb2bf; } /* Punctuation / Operator */
+    .syn-v { color: #e06c75; } /* Property / Variable */
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-900 min-h-screen flex flex-col antialiased">
+
+  <!-- Header -->
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex flex-wrap items-center justify-between gap-4">
+      <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center font-bold text-xl shadow-sm shadow-indigo-200">
+          AI
+        </div>
+        <div>
+          <h1 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+            Chatbot Basics Playground
+            <span class="text-xs px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-700 font-medium">Production Architecture</span>
+          </h1>
+          <p class="text-xs text-slate-500">Compare Rule-Based keyword matching with Language Model (LLM) intelligence</p>
+        </div>
+      </div>
+
+      <!-- Navigation & Mode Selector -->
+      <div class="flex items-center gap-2">
+        <div class="bg-slate-100 p-1 rounded-xl flex items-center text-sm font-medium border border-slate-200">
+          <button id="view-playground-btn" class="px-3.5 py-1.5 rounded-lg bg-white text-indigo-700 shadow-sm transition-all duration-150">
+            Interactive Chat
+          </button>
+          <button id="view-code-btn" class="px-3.5 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 transition-all duration-150">
+            Behind the Code
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 flex flex-col">
+
+    <!-- TAB 1: PLAYGROUND & INSPECTOR -->
+    <div id="tab-playground" class="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-6 min-h-[640px]">
+      
+      <!-- LEFT: Chat App (7 cols) -->
+      <div class="lg:col-span-7 flex flex-col bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden h-[720px]">
+        
+        <!-- Chat Control Bar -->
+        <div class="p-4 border-b border-slate-100 bg-slate-50/70 flex flex-wrap items-center justify-between gap-3">
+          <div class="flex items-center gap-2">
+            <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Engine:</span>
+            <div class="inline-flex rounded-lg bg-slate-200 p-0.5 text-xs font-medium">
+              <button id="mode-rule-btn" class="px-3 py-1.5 rounded-md bg-white text-slate-900 shadow-sm font-semibold transition">
+                1. Rule-Based Bot
+              </button>
+              <button id="mode-llm-btn" class="px-3 py-1.5 rounded-md text-slate-600 hover:text-slate-900 font-medium transition">
+                2. Language Model (LLM)
+              </button>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <button id="clear-chat-btn" class="text-xs px-2.5 py-1.5 rounded-lg text-slate-600 hover:bg-slate-200 hover:text-slate-900 transition flex items-center gap-1.5 border border-slate-200">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+              Reset Chat
+            </button>
+          </div>
+        </div>
+
+        <!-- Mode Explanation Banner -->
+        <div id="mode-banner" class="px-4 py-2.5 bg-amber-50 border-b border-amber-100 flex items-start gap-2.5 text-xs text-amber-900 transition-colors">
+          <div id="mode-banner-icon" class="mt-0.5 font-bold text-amber-600 text-sm">⚡</div>
+          <div class="flex-1">
+            <span id="mode-banner-title" class="font-semibold">Rule-Based Active:</span>
+            <span id="mode-banner-desc" class="text-amber-800">Evaluates input against compiled regex patterns. It is completely stateless with zero memory across conversation turns.</span>
+          </div>
+        </div>
+
+        <!-- Chat History Messages Scroll Area -->
+        <div id="messages-container" class="flex-1 p-4 overflow-y-auto space-y-4">
+          <!-- Messages will be injected by JavaScript -->
+        </div>
+
+        <!-- Quick Starter Chips -->
+        <div class="px-4 py-2 bg-slate-50/50 border-t border-slate-100 flex items-center gap-2 overflow-x-auto text-xs text-slate-600">
+          <span class="text-slate-400 whitespace-nowrap font-medium">Try asking:</span>
+          <button class="sample-prompt-btn px-2.5 py-1 bg-white hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-200 rounded-full border border-slate-200 whitespace-nowrap transition">
+            Hello!
+          </button>
+          <button class="sample-prompt-btn px-2.5 py-1 bg-white hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-200 rounded-full border border-slate-200 whitespace-nowrap transition">
+            What is the weather?
+          </button>
+          <button class="sample-prompt-btn px-2.5 py-1 bg-white hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-200 rounded-full border border-slate-200 whitespace-nowrap transition">
+            My name is Alex.
+          </button>
+          <button class="sample-prompt-btn px-2.5 py-1 bg-white hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-200 rounded-full border border-slate-200 whitespace-nowrap transition">
+            What was my name?
+          </button>
+          <button class="sample-prompt-btn px-2.5 py-1 bg-white hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-200 rounded-full border border-slate-200 whitespace-nowrap transition">
+            Explain gravity simply
+          </button>
+        </div>
+
+        <!-- Chat Input Form -->
+        <form id="chat-form" class="p-4 bg-white border-t border-slate-200 flex items-center gap-2">
+          <input
+            id="chat-input"
+            type="text"
+            placeholder="Type a message (e.g. 'hello', 'weather', 'my name is Alex')..."
+            autocomplete="off"
+            class="flex-1 px-4 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm transition"
+          />
+          <button
+            type="submit"
+            id="send-btn"
+            class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white font-medium text-sm rounded-xl shadow-sm transition flex items-center gap-1.5"
+          >
+            <span>Send</span>
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+          </button>
+        </form>
+
+      </div>
+
+      <!-- RIGHT: AI "Under The Hood" Inspector (5 cols) -->
+      <div class="lg:col-span-5 flex flex-col gap-4 h-[720px] overflow-y-auto pr-1">
+        
+        <!-- Card 1: Context Window Inspector (Memory) -->
+        <div class="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm">
+          <div class="flex items-center justify-between mb-2">
+            <div class="flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+              <h2 class="text-sm font-bold text-slate-800">Context Window (Message Array)</h2>
+            </div>
+            <span id="turn-count-badge" class="text-xs px-2 py-0.5 rounded bg-slate-100 text-slate-600 font-mono">0 turns</span>
+          </div>
+          <p class="text-xs text-slate-500 mb-2.5">
+            Modern LLMs have <strong>no persistent memory</strong>. To remember past turns, your code must send the entire message history on every single request.
+          </p>
+          <div class="bg-slate-900 rounded-xl p-3 text-slate-100 font-mono text-xs max-h-48 overflow-y-auto">
+            <pre id="context-json-viewer" class="text-emerald-400 whitespace-pre-wrap break-all">// Send a message to see the structured context payload</pre>
+          </div>
+        </div>
+
+        <!-- Card 2: Live Token Visualizer -->
+        <div class="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm">
+          <div class="flex items-center justify-between mb-2">
+            <div class="flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-indigo-500"></span>
+              <h2 class="text-sm font-bold text-slate-800">Token Visualizer</h2>
+            </div>
+            <span id="token-count-badge" class="text-xs px-2 py-0.5 rounded bg-indigo-50 text-indigo-700 font-mono font-medium">~0 tokens</span>
+          </div>
+          <p class="text-xs text-slate-500 mb-2.5">
+            Language models don't read whole words. They read <strong>tokens</strong> (common chunks of characters, typically ~4 characters each).
+          </p>
+          <div id="token-box" class="bg-slate-50 border border-slate-200 rounded-xl p-3 min-h-[64px] flex flex-wrap gap-1.5 items-center">
+            <span class="text-xs text-slate-400 italic">Type a message to see how it breaks into tokens...</span>
+          </div>
+        </div>
+
+        <!-- Card 3: System Prompt & Temperature Tuning -->
+        <div class="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm space-y-3">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-violet-500"></span>
+              <h2 class="text-sm font-bold text-slate-800">System Instruction & Hallucinations</h2>
+            </div>
+            <span class="text-xs px-2 py-0.5 rounded bg-violet-50 text-violet-700 font-medium">LLM Controls</span>
+          </div>
+          
+          <div>
+            <div class="flex items-center justify-between text-xs mb-1">
+              <label for="system-prompt-input" class="font-medium text-slate-700">System Instruction (Persona & Boundaries):</label>
+              <div class="space-x-1">
+                <button type="button" id="preset-tutor" class="text-[11px] text-indigo-600 hover:underline">Tutor</button>
+                <span class="text-slate-300">|</span>
+                <button type="button" id="preset-pirate" class="text-[11px] text-indigo-600 hover:underline">Pirate</button>
+                <span class="text-slate-300">|</span>
+                <button type="button" id="preset-concise" class="text-[11px] text-indigo-600 hover:underline">Strict</button>
+              </div>
+            </div>
+            <textarea
+              id="system-prompt-input"
+              rows="2"
+              class="w-full text-xs p-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+            >You are a helpful, warm AI tutor. Answer questions simply and clearly for beginners.</textarea>
+          </div>
+
+          <!-- Temperature / Hallucination Factor -->
+          <div class="pt-1 border-t border-slate-100">
+            <div class="flex items-center justify-between text-xs mb-1">
+              <label for="temp-slider" class="font-medium text-slate-700 flex items-center gap-1">
+                <span>Temperature (Next-Token Randomness):</span>
+                <span id="temp-val" class="font-mono text-indigo-600 font-semibold">0.7</span>
+              </label>
+              <span id="temp-label" class="text-[11px] text-amber-600 font-medium">Balanced Creative</span>
+            </div>
+            <input
+              id="temp-slider"
+              type="range"
+              min="0.0"
+              max="1.0"
+              step="0.1"
+              value="0.7"
+              class="w-full accent-indigo-600 cursor-pointer"
+            />
+            <div class="flex justify-between text-[10px] text-slate-400 mt-0.5">
+              <span>0.0 (Deterministic / Exact)</span>
+              <span>0.7 (Default)</span>
+              <span>1.0 (High Hallucination Risk)</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- TAB 2: BEHIND THE CODE (PRODUCTION ARCHITECTURE) -->
+    <div id="tab-code" class="hidden flex-1 flex flex-col gap-6">
+      
+      <!-- Intro Banner -->
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 text-white flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-sm">
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="px-2 py-0.5 text-xs font-semibold rounded bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">Clean Architecture</span>
+            <h2 class="text-base font-bold text-white">How Engineers Actually Write Chatbots</h2>
+          </div>
+          <p class="text-xs text-slate-400 mt-1.5 max-w-2xl leading-relaxed">
+            Instead of loose toy scripts with mutable globals, production AI systems use typed contracts, encapsulated session state, boundary regex matching, token budgeting, and resilient error recovery.
+          </p>
+        </div>
+        <div class="flex items-center gap-2 self-start sm:self-auto">
+          <button id="copy-both-code-btn" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold rounded-xl shadow-sm whitespace-nowrap transition flex items-center gap-1.5">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+            Copy Both Snippets
+          </button>
+        </div>
+      </div>
+
+      <!-- Code Snippets Grid -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        
+        <!-- Snippet 1: Professional Rule-Based Engine -->
+        <div class="bg-slate-950 rounded-2xl border border-slate-800 p-5 shadow-sm flex flex-col">
+          <div class="flex items-center justify-between pb-3 border-b border-slate-800 mb-3">
+            <div class="flex items-center gap-2">
+              <span class="px-2 py-0.5 text-xs font-semibold rounded bg-amber-500/20 text-amber-300 border border-amber-500/30">Step 1</span>
+              <h3 class="text-sm font-bold text-white font-mono">RuleBasedEngine.ts</h3>
+            </div>
+            <button id="copy-rule-code-btn" class="text-xs px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition flex items-center gap-1">
+              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+              Copy
+            </button>
+          </div>
+          <div class="text-xs font-mono overflow-x-auto flex-1 leading-relaxed max-h-[500px]">
+            <pre id="rule-code-block" class="text-slate-300 whitespace-pre"><code><span class="syn-c">/**
+ * Professional Rule-Based Keyword Matcher
+ * Uses compiled regex word boundaries to avoid false substring matches.
+ */</span>
+<span class="syn-k">export interface</span> <span class="syn-t">RuleDefinition</span> <span class="syn-p">{</span>
+  <span class="syn-v">id</span><span class="syn-p">:</span> <span class="syn-t">string</span><span class="syn-p">;</span>
+  <span class="syn-v">patterns</span><span class="syn-p">:</span> <span class="syn-t">RegExp</span><span class="syn-p">[];</span>
+  <span class="syn-v">response</span><span class="syn-p">:</span> <span class="syn-t">string</span><span class="syn-p">;</span>
+<span class="syn-p">}</span>
+
+<span class="syn-k">export interface</span> <span class="syn-t">EngineResult</span> <span class="syn-p">{</span>
+  <span class="syn-v">success</span><span class="syn-p">:</span> <span class="syn-t">boolean</span><span class="syn-p">;</span>
+  <span class="syn-v">response</span><span class="syn-p">:</span> <span class="syn-t">string</span><span class="syn-p">;</span>
+  <span class="syn-v">matchedRuleId</span><span class="syn-p">?:</span> <span class="syn-t">string</span><span class="syn-p">;</span>
+<span class="syn-p">}</span>
+
+<span class="syn-k">export class</span> <span class="syn-t">RuleBasedEngine</span> <span class="syn-p">{</span>
+  <span class="syn-k">private readonly</span> <span class="syn-v">rules</span><span class="syn-p">:</span> <span class="syn-t">RuleDefinition</span><span class="syn-p">[] = [];</span>
+  <span class="syn-k">private readonly</span> <span class="syn-v">fallback</span><span class="syn-p">:</span> <span class="syn-t">string</span><span class="syn-p">;</span>
+
+  <span class="syn-k">constructor</span><span class="syn-p">(</span><span class="syn-v">fallback</span><span class="syn-p">:</span> <span class="syn-t">string</span> <span class="syn-p">=</span> <span class="syn-s">"I don't recognize that command."</span><span class="syn-p">) {</span>
+    <span class="syn-k">this</span><span class="syn-p">.</span><span class="syn-v">fallback</span> <span class="syn-p">=</span> <span class="syn-v">fallback</span><span class="syn-p">;</span>
+  <span class="syn-p">}</span>
+
+  <span class="syn-c">/** Registers keywords with strict word-boundary (\b) matching */</span>
+  <span class="syn-k">public</span> <span class="syn-f">addRule</span><span class="syn-p">(</span><span class="syn-v">id</span><span class="syn-p">:</span> <span class="syn-t">string</span><span class="syn-p">,</span> <span class="syn-v">keywords</span><span class="syn-p">:</span> <span class="syn-t">string</span><span class="syn-p">[],</span> <span class="syn-v">response</span><span class="syn-p">:</span> <span class="syn-t">string</span><span class="syn-p">):</span> <span class="syn-t">void</span> <span class="syn-p">{</span>
+    <span class="syn-k">const</span> <span class="syn-v">patterns</span> <span class="syn-p">=</span> <span class="syn-v">keywords</span><span class="syn-p">.</span><span class="syn-f">map</span><span class="syn-p">(</span><span class="syn-v">kw</span> <span class="syn-p">=&gt;</span> 
+      <span class="syn-k">new</span> <span class="syn-t">RegExp</span><span class="syn-p">(</span><span class="syn-s">`\\b</span><span class="syn-p">${</span><span class="syn-v">kw</span><span class="syn-p">.</span><span class="syn-f">replace</span><span class="syn-p">(</span><span class="syn-s">/[.*+?^${}()|[\]\\]/g</span><span class="syn-p">,</span> <span class="syn-s">'\\$&amp;'</span><span class="syn-p">)}</span><span class="syn-s">\\b`</span><span class="syn-p">,</span> <span class="syn-s">'i'</span><span class="syn-p">)</span>
+    <span class="syn-p">);</span>
+    <span class="syn-k">this</span><span class="syn-p">.</span><span class="syn-v">rules</span><span class="syn-p">.</span><span class="syn-f">push</span><span class="syn-p">({</span> <span class="syn-v">id</span><span class="syn-p">,</span> <span class="syn-v">patterns</span><span class="syn-p">,</span> <span class="syn-v">response</span> <span class="syn-p">});</span>
+  <span class="syn-p">}</span>
+
+  <span class="syn-c">/** Evaluates user message against rules dictionary */</span>
+  <span class="syn-k">public</span> <span class="syn-f">process</span><span class="syn-p">(</span><span class="syn-v">input</span><span class="syn-p">:</span> <span class="syn-t">string</span><span class="syn-p">):</span> <span class="syn-t">EngineResult</span> <span class="syn-p">{</span>
+    <span class="syn-k">const</span> <span class="syn-v">normalized</span> <span class="syn-p">=</span> <span class="syn-v">input</span><span class="syn-p">.</span><span class="syn-f">trim</span><span class="syn-p">();</span>
+
+    <span class="syn-k">for</span> <span class="syn-p">(</span><span class="syn-k">const</span> <span class="syn-v">rule</span> <span class="syn-k">of</span> <span class="syn-k">this</span><span class="syn-p">.</span><span class="syn-v">rules</span><span class="syn-p">) {</span>
+      <span class="syn-k">for</span> <span class="syn-p">(</span><span class="syn-k">const</span> <span class="syn-v">pattern</span> <span class="syn-k">of</span> <span class="syn-v">rule</span><span class="syn-p">.</span><span class="syn-v">patterns</span><span class="syn-p">) {</span>
+        <span class="syn-k">if</span> <span class="syn-p">(</span><span class="syn-v">pattern</span><span class="syn-p">.</span><span class="syn-f">test</span><span class="syn-p">(</span><span class="syn-v">normalized</span><span class="syn-p">)) {</span>
+          <span class="syn-k">return</span> <span class="syn-p">{</span> <span class="syn-v">success</span><span class="syn-p">:</span> <span class="syn-n">true</span><span class="syn-p">,</span> <span class="syn-v">response</span><span class="syn-p">:</span> <span class="syn-v">rule</span><span class="syn-p">.</span><span class="syn-v">response</span><span class="syn-p">,</span> <span class="syn-v">matchedRuleId</span><span class="syn-p">:</span> <span class="syn-v">rule</span><span class="syn-p">.</span><span class="syn-v">id</span> <span class="syn-p">};</span>
+        <span class="syn-p">}</span>
+      <span class="syn-p">}</span>
+    <span class="syn-p">}</span>
+
+    <span class="syn-k">return</span> <span class="syn-p">{</span> <span class="syn-v">success</span><span class="syn-p">:</span> <span class="syn-n">false</span><span class="syn-p">,</span> <span class="syn-v">response</span><span class="syn-p">:</span> <span class="syn-k">this</span><span class="syn-p">.</span><span class="syn-v">fallback</span> <span class="syn-p">};</span>
+  <span class="syn-p">}</span>
+<span class="syn-p">}</span></code></pre>
+          </div>
+        </div>
+
+        <!-- Snippet 2: Professional LLM Client & Session Manager -->
+        <div class="bg-slate-950 rounded-2xl border border-slate-800 p-5 shadow-sm flex flex-col">
+          <div class="flex items-center justify-between pb-3 border-b border-slate-800 mb-3">
+            <div class="flex items-center gap-2">
+              <span class="px-2 py-0.5 text-xs font-semibold rounded bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">Step 2</span>
+              <h3 class="text-sm font-bold text-white font-mono">LLMSessionManager.ts</h3>
+            </div>
+            <button id="copy-llm-code-btn" class="text-xs px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition flex items-center gap-1">
+              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+              Copy
+            </button>
+          </div>
+          <div class="text-xs font-mono overflow-x-auto flex-1 leading-relaxed max-h-[500px]">
+            <pre id="llm-code-block" class="text-slate-300 whitespace-pre"><code><span class="syn-c">/**
+ * Professional LLM Multi-Turn Session Manager
+ * Encapsulates message history, error rollback, and token budgets.
+ */</span>
+<span class="syn-k">export type</span> <span class="syn-t">Role</span> <span class="syn-p">=</span> <span class="syn-s">'system'</span> <span class="syn-p">|</span> <span class="syn-s">'user'</span> <span class="syn-p">|</span> <span class="syn-s">'assistant'</span><span class="syn-p">;</span>
+
+<span class="syn-k">export interface</span> <span class="syn-t">ChatMessage</span> <span class="syn-p">{</span>
+  <span class="syn-v">role</span><span class="syn-p">:</span> <span class="syn-t">Role</span><span class="syn-p">;</span>
+  <span class="syn-v">content</span><span class="syn-p">:</span> <span class="syn-t">string</span><span class="syn-p">;</span>
+<span class="syn-p">}</span>
+
+<span class="syn-k">export interface</span> <span class="syn-t">SessionConfig</span> <span class="syn-p">{</span>
+  <span class="syn-v">apiKey</span><span class="syn-p">:</span> <span class="syn-t">string</span><span class="syn-p">;</span>
+  <span class="syn-v">model</span><span class="syn-p">?:</span> <span class="syn-t">string</span><span class="syn-p">;</span>
+  <span class="syn-v">systemInstruction</span><span class="syn-p">:</span> <span class="syn-t">string</span><span class="syn-p">;</span>
+<span class="syn-p">}</span>
+
+<span class="syn-k">export class</span> <span class="syn-t">LLMSessionManager</span> <span class="syn-p">{</span>
+  <span class="syn-k">private</span> <span class="syn-v">history</span><span class="syn-p">:</span> <span class="syn-t">ChatMessage</span><span class="syn-p">[] = [];</span>
+  <span class="syn-k">private readonly</span> <span class="syn-v">config</span><span class="syn-p">:</span> <span class="syn-t">SessionConfig</span><span class="syn-p">;</span>
+
+  <span class="syn-k">constructor</span><span class="syn-p">(</span><span class="syn-v">config</span><span class="syn-p">:</span> <span class="syn-t">SessionConfig</span><span class="syn-p">) {</span>
+    <span class="syn-k">this</span><span class="syn-p">.</span><span class="syn-v">config</span> <span class="syn-p">=</span> <span class="syn-p">{</span> <span class="syn-v">model</span><span class="syn-p">:</span> <span class="syn-s">'gpt-4o-mini'</span><span class="syn-p">,</span> <span class="syn-p">...</span><span class="syn-v">config</span> <span class="syn-p">};</span>
+    <span class="syn-k">this</span><span class="syn-p">.</span><span class="syn-f">reset</span><span class="syn-p">();</span>
+  <span class="syn-p">}</span>
+
+  <span class="syn-c">/** Dispatches prompt with accumulated context history */</span>
+  <span class="syn-k">public async</span> <span class="syn-f">sendMessage</span><span class="syn-p">(</span><span class="syn-v">text</span><span class="syn-p">:</span> <span class="syn-t">string</span><span class="syn-p">,</span> <span class="syn-v">temp</span><span class="syn-p">:</span> <span class="syn-t">number</span> <span class="syn-p">=</span> <span class="syn-n">0.7</span><span class="syn-p">):</span> <span class="syn-t">Promise</span><span class="syn-p">&lt;</span><span class="syn-t">string</span><span class="syn-p">&gt; {</span>
+    <span class="syn-k">this</span><span class="syn-p">.</span><span class="syn-v">history</span><span class="syn-p">.</span><span class="syn-f">push</span><span class="syn-p">({</span> <span class="syn-v">role</span><span class="syn-p">:</span> <span class="syn-s">'user'</span><span class="syn-p">,</span> <span class="syn-v">content</span><span class="syn-p">:</span> <span class="syn-v">text</span> <span class="syn-p">});</span>
+
+    <span class="syn-k">try</span> <span class="syn-p">{</span>
+      <span class="syn-k">const</span> <span class="syn-v">res</span> <span class="syn-p">=</span> <span class="syn-k">await</span> <span class="syn-f">fetch</span><span class="syn-p">(</span><span class="syn-s">"https://api.openai.com/v1/chat/completions"</span><span class="syn-p">, {</span>
+        <span class="syn-v">method</span><span class="syn-p">:</span> <span class="syn-s">"POST"</span><span class="syn-p">,</span>
+        <span class="syn-v">headers</span><span class="syn-p">:</span> <span class="syn-p">{</span>
+          <span class="syn-s">"Content-Type"</span><span class="syn-p">:</span> <span class="syn-s">"application/json"</span><span class="syn-p">,</span>
+          <span class="syn-s">"Authorization"</span><span class="syn-p">:</span> <span class="syn-s">`Bearer </span><span class="syn-p">${</span><span class="syn-k">this</span><span class="syn-p">.</span><span class="syn-v">config</span><span class="syn-p">.</span><span class="syn-v">apiKey</span><span class="syn-p">}</span><span class="syn-s">`</span>
+        <span class="syn-p">},</span>
+        <span class="syn-v">body</span><span class="syn-p">:</span> <span class="syn-t">JSON</span><span class="syn-p">.</span><span class="syn-f">stringify</span><span class="syn-p">({</span>
+          <span class="syn-v">model</span><span class="syn-p">:</span> <span class="syn-k">this</span><span class="syn-p">.</span><span class="syn-v">config</span><span class="syn-p">.</span><span class="syn-v">model</span><span class="syn-p">,</span>
+          <span class="syn-v">messages</span><span class="syn-p">:</span> <span class="syn-k">this</span><span class="syn-p">.</span><span class="syn-v">history</span><span class="syn-p">,</span> <span class="syn-c">// Resends full context</span>
+          <span class="syn-v">temperature</span><span class="syn-p">:</span> <span class="syn-v">temp</span><span class="syn-p">,</span>       <span class="syn-c">// Controls next-token sampling</span>
+          <span class="syn-v">max_tokens</span><span class="syn-p">:</span> <span class="syn-n">300</span>           <span class="syn-c">// Budget token limit</span>
+        <span class="syn-p">})</span>
+      <span class="syn-p">});</span>
+
+      <span class="syn-k">if</span> <span class="syn-p">(!</span><span class="syn-v">res</span><span class="syn-p">.</span><span class="syn-v">ok</span><span class="syn-p">)</span> <span class="syn-k">throw new</span> <span class="syn-t">Error</span><span class="syn-p">(</span><span class="syn-s">`API Error: </span><span class="syn-p">${</span><span class="syn-v">res</span><span class="syn-p">.</span><span class="syn-v">statusText</span><span class="syn-p">}</span><span class="syn-s">`</span><span class="syn-p">);</span>
+
+      <span class="syn-k">const</span> <span class="syn-v">payload</span> <span class="syn-p">=</span> <span class="syn-k">await</span> <span class="syn-v">res</span><span class="syn-p">.</span><span class="syn-f">json</span><span class="syn-p">();</span>
+      <span class="syn-k">const</span> <span class="syn-v">reply</span> <span class="syn-p">=</span> <span class="syn-v">payload</span><span class="syn-p">.</span><span class="syn-v">choices</span><span class="syn-p">[</span><span class="syn-n">0</span><span class="syn-p">].</span><span class="syn-v">message</span><span class="syn-p">.</span><span class="syn-v">content</span><span class="syn-p">;</span>
+
+      <span class="syn-c">// Commit assistant turn to history for memory continuity</span>
+      <span class="syn-k">this</span><span class="syn-p">.</span><span class="syn-v">history</span><span class="syn-p">.</span><span class="syn-f">push</span><span class="syn-p">({</span> <span class="syn-v">role</span><span class="syn-p">:</span> <span class="syn-s">'assistant'</span><span class="syn-p">,</span> <span class="syn-v">content</span><span class="syn-p">:</span> <span class="syn-v">reply</span> <span class="syn-p">});</span>
+      <span class="syn-k">return</span> <span class="syn-v">reply</span><span class="syn-p">;</span>
+    <span class="syn-p">}</span> <span class="syn-k">catch</span> <span class="syn-p">(</span><span class="syn-v">err</span><span class="syn-p">) {</span>
+      <span class="syn-k">this</span><span class="syn-p">.</span><span class="syn-v">history</span><span class="syn-p">.</span><span class="syn-f">pop</span><span class="syn-p">();</span> <span class="syn-c">// Rollback unfulfilled user turn</span>
+      <span class="syn-k">throw</span> <span class="syn-v">err</span><span class="syn-p">;</span>
+    <span class="syn-p">}</span>
+  <span class="syn-p">}</span>
+
+  <span class="syn-k">public</span> <span class="syn-f">reset</span><span class="syn-p">(</span><span class="syn-v">newPrompt</span><span class="syn-p">?:</span> <span class="syn-t">string</span><span class="syn-p">):</span> <span class="syn-t">void</span> <span class="syn-p">{</span>
+    <span class="syn-k">this</span><span class="syn-p">.</span><span class="syn-v">history</span> <span class="syn-p">=</span> <span class="syn-p">[{</span>
+      <span class="syn-v">role</span><span class="syn-p">:</span> <span class="syn-s">'system'</span><span class="syn-p">,</span>
+      <span class="syn-v">content</span><span class="syn-p">:</span> <span class="syn-v">newPrompt</span> <span class="syn-p">??</span> <span class="syn-k">this</span><span class="syn-p">.</span><span class="syn-v">config</span><span class="syn-p">.</span><span class="syn-v">systemInstruction</span>
+    <span class="syn-p">}];</span>
+  <span class="syn-p">}</span>
+<span class="syn-p">}</span></code></pre>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Architectural Comparison Matrix -->
+      <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm">
+        <h3 class="text-sm font-bold text-slate-900 mb-3">Architectural Comparison: Rule-Based vs. Language Model</h3>
+        <div class="overflow-x-auto">
+          <table class="w-full text-xs text-left text-slate-600">
+            <thead class="bg-slate-50 text-slate-800 font-semibold border-b border-slate-200">
+              <tr>
+                <th class="py-2.5 px-3">Dimension</th>
+                <th class="py-2.5 px-3 text-amber-700 bg-amber-50/50">Rule-Based Chatbot</th>
+                <th class="py-2.5 px-3 text-indigo-700 bg-indigo-50/50">Language Model (LLM)</th>
+                <th class="py-2.5 px-3">Why It Matters</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+              <tr>
+                <td class="py-2.5 px-3 font-semibold text-slate-800">Core Engine</td>
+                <td class="py-2.5 px-3">Keyword lookup &amp; <code class="bg-slate-100 px-1 rounded">if/else</code> statements</td>
+                <td class="py-2.5 px-3">Next-token probability neural network</td>
+                <td class="py-2.5 px-3">LLMs generalize to unfamiliar phrasing; rules fail instantly if words differ.</td>
+              </tr>
+              <tr>
+                <td class="py-2.5 px-3 font-semibold text-slate-800">Conversation Memory</td>
+                <td class="py-2.5 px-3">None by default (stateless turn-by-turn)</td>
+                <td class="py-2.5 px-3">Simulated by sending full <code class="bg-slate-100 px-1 rounded">messages[]</code> history</td>
+                <td class="py-2.5 px-3">Allows follow-ups ("What was my name?") without manual database schemas.</td>
+              </tr>
+              <tr>
+                <td class="py-2.5 px-3 font-semibold text-slate-800">Behavior Steering</td>
+                <td class="py-2.5 px-3">Hardcoded strings</td>
+                <td class="py-2.5 px-3">System instructions &amp; persona prompts</td>
+                <td class="py-2.5 px-3">Changing one sentence adapts tone, format, audience level, or persona.</td>
+              </tr>
+              <tr>
+                <td class="py-2.5 px-3 font-semibold text-slate-800">Failure Mode</td>
+                <td class="py-2.5 px-3">"I don't understand" (Fallback)</td>
+                <td class="py-2.5 px-3"><strong>Hallucination</strong> (inventing plausible facts)</td>
+                <td class="py-2.5 px-3">LLMs optimize for fluency, not strict fact verification.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- Toast Notification -->
+  <div id="toast" class="fixed bottom-6 right-6 px-4 py-2.5 bg-slate-900 text-white text-xs font-medium rounded-xl shadow-lg transform translate-y-16 opacity-0 transition-all duration-200 z-50 pointer-events-none flex items-center gap-2">
+    <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+    <span id="toast-message">Copied to clipboard!</span>
+  </div>
+
+  <script>
+    /**
+     * Professional Architecture: Clean modular classes for engine, state, and UI.
+     */
+
+    // 1. Rule-Based Engine Module
+    class RuleEngine {
+      constructor() {
+        this.rules = [
+          {
+            id: 'greeting',
+            patterns: [/\b(hello|hi|hey|greetings)\b/i],
+            response: "Hello! I am a rule-based engine. I parse exact keyword patterns. Try asking for 'weather', 'help', or 'python'."
+          },
+          {
+            id: 'weather',
+            patterns: [/\b(weather|temperature|forecast|rain)\b/i],
+            response: "I am a local script without network capabilities, so I cannot check live weather."
+          },
+          {
+            id: 'help',
+            patterns: [/\b(help|commands|topics|options)\b/i],
+            response: "Supported topics: 'hello', 'weather', 'help', 'python', 'name', 'bye'."
+          },
+          {
+            id: 'python',
+            patterns: [/\b(python|pytorch|numpy|pandas)\b/i],
+            response: "Python is the primary language of AI engineering due to ecosystems like PyTorch and Hugging Face."
+          },
+          {
+            id: 'name',
+            patterns: [/\b(name|who am i|identity)\b/i],
+            response: "I don't know your name! As a rule-based bot without a database, I am completely stateless across turns."
+          },
+          {
+            id: 'bye',
+            patterns: [/\b(bye|goodbye|exit|quit)\b/i],
+            response: "Goodbye! Thanks for testing deterministic rule matching."
+          }
+        ];
+        this.fallback = "No rule matched your message. In a deterministic system, unmapped inputs trigger an explicit fallback.";
+      }
+
+      evaluate(input) {
+        const text = input.trim();
+        for (const rule of this.rules) {
+          for (const pattern of rule.patterns) {
+            if (pattern.test(text)) {
+              return {
+                matched: true,
+                ruleId: rule.id,
+                response: rule.response
+              };
+            }
+          }
+        }
+        return {
+          matched: false,
+          ruleId: null,
+          response: this.fallback
+        };
+      }
+    }
+
+    // 2. LLM Simulator Module
+    class LLMSimulator {
+      constructor() {
+        this.userName = null;
+      }
+
+      generate(input, persona, temperature) {
+        const text = input.trim();
+        const lower = text.toLowerCase();
+        const temp = parseFloat(temperature);
+
+        // Memory pattern extraction
+        const nameMatch = text.match(/(?:my name is|i am|call me)\s+([A-Z][a-z]+|[a-z]+)/i);
+        if (nameMatch) {
+          this.userName = nameMatch[1].charAt(0).toUpperCase() + nameMatch[1].slice(1);
+        }
+
+        const isPirate = persona.toLowerCase().includes("pirate");
+        const isStrict = persona.toLowerCase().includes("concise") || persona.toLowerCase().includes("strict");
+        let reply = "";
+
+        if (lower.includes("what was my name") || lower.includes("who am i") || lower.includes("remember my name")) {
+          if (this.userName) {
+            if (isPirate) {
+              reply = `Ahoy! Ye told me yer name was ${this.userName}, matey! It's logged in me multi-turn context!`;
+            } else if (isStrict) {
+              reply = `Your name is ${this.userName}, retrieved from previous context turns.`;
+            } else {
+              reply = `Your name is ${this.userName}! Because the client resends the full message array on every turn, I can inspect past exchanges and recall it.`;
+            }
+          } else {
+            reply = "You haven't specified your name yet in our active session history.";
+          }
+        } else if (lower.includes("weather")) {
+          if (isPirate) {
+            reply = "The trade winds blow briskly! Though without satellite APIs, a pirate model can only guess the skies.";
+          } else if (isStrict) {
+            reply = "Language models cannot access live atmospheric sensors without tool-calling / external APIs.";
+          } else {
+            reply = "Language models cannot observe live weather directly because they predict text from training patterns. However, modern models solve this via Tool-Calling (Function Calling) to fetch live API data.";
+          }
+        } else if (lower.includes("gravity")) {
+          if (isPirate) {
+            reply = "Gravity be the relentless pull dragging ships and anchor chains toward the center of the earth!";
+          } else if (isStrict) {
+            reply = "Gravity is a fundamental physical interaction causing masses to attract, described geometrically by general relativity.";
+          } else {
+            reply = "Gravity is the fundamental force that attracts objects with mass toward each other. Earth's gravity holds our atmosphere in place and keeps planets orbiting the Sun.";
+          }
+        } else if (lower.includes("hello") || lower.includes("hi")) {
+          if (isPirate) {
+            reply = "Ahoy, adventurer! Welcome aboard the flagship of AI Fundamentals. What course shall we chart?";
+          } else if (isStrict) {
+            reply = "Ready. Awaiting your technical query.";
+          } else {
+            reply = "Hello! I am demonstrating modern LLM inference. Unlike keyword matching, I synthesize natural language responses conditioned on your system instruction and multi-turn chat history.";
+          }
+        } else {
+          if (isPirate) {
+            reply = `Aye! Regarding "${text}": Like steering through uncharted waters, an LLM predicts each next token across the probability sea!`;
+          } else if (isStrict) {
+            reply = `Query processed: "${text}". Output synthesized via transformer self-attention over token probabilities.`;
+          } else {
+            reply = `You asked about "${text}". In a production LLM, your prompt is broken into tokens, passed through deep neural layers, and generated token-by-token based on statistical likelihood.`;
+          }
+        }
+
+        if (temp >= 0.9) {
+          reply += " [⚠️ High Temperature Notice: At 1.0, token sampling diversity increases significantly, increasing the probability of fluent hallucinations!]";
+        }
+
+        return reply;
+      }
+
+      reset() {
+        this.userName = null;
+      }
+    }
+
+    // 3. Tokenizer Utility
+    class Tokenizer {
+      static tokenize(text) {
+        if (!text || !text.trim()) return [];
+        return text.match(/\w+|[^\w\s]|\s+/g) || [text];
+      }
+    }
+
+    // 4. Application UI Controller
+    class ChatUIController {
+      constructor() {
+        this.ruleEngine = new RuleEngine();
+        this.llmSimulator = new LLMSimulator();
+        this.currentMode = 'rule';
+        this.conversationHistory = [];
+
+        this.initDom();
+        this.bindEvents();
+        this.render();
+      }
+
+      initDom() {
+        this.tabPlayground = document.getElementById('tab-playground');
+        this.tabCode = document.getElementById('tab-code');
+        this.viewPlaygroundBtn = document.getElementById('view-playground-btn');
+        this.viewCodeBtn = document.getElementById('view-code-btn');
+
+        this.modeRuleBtn = document.getElementById('mode-rule-btn');
+        this.modeLlmBtn = document.getElementById('mode-llm-btn');
+        this.modeBanner = document.getElementById('mode-banner');
+        this.modeBannerTitle = document.getElementById('mode-banner-title');
+        this.modeBannerDesc = document.getElementById('mode-banner-desc');
+        this.modeBannerIcon = document.getElementById('mode-banner-icon');
+
+        this.messagesContainer = document.getElementById('messages-container');
+        this.chatForm = document.getElementById('chat-form');
+        this.chatInput = document.getElementById('chat-input');
+        this.clearChatBtn = document.getElementById('clear-chat-btn');
+        this.samplePromptBtns = document.querySelectorAll('.sample-prompt-btn');
+
+        this.contextJsonViewer = document.getElementById('context-json-viewer');
+        this.turnCountBadge = document.getElementById('turn-count-badge');
+        this.tokenBox = document.getElementById('token-box');
+        this.tokenCountBadge = document.getElementById('token-count-badge');
+
+        this.systemPromptInput = document.getElementById('system-prompt-input');
+        this.presetTutor = document.getElementById('preset-tutor');
+        this.presetPirate = document.getElementById('preset-pirate');
+        this.presetConcise = document.getElementById('preset-concise');
+
+        this.tempSlider = document.getElementById('temp-slider');
+        this.tempVal = document.getElementById('temp-val');
+        this.tempLabel = document.getElementById('temp-label');
+
+        this.copyRuleCodeBtn = document.getElementById('copy-rule-code-btn');
+        this.copyLlmCodeBtn = document.getElementById('copy-llm-code-btn');
+        this.copyBothCodeBtn = document.getElementById('copy-both-code-btn');
+        this.toast = document.getElementById('toast');
+        this.toastMessage = document.getElementById('toast-message');
+      }
+
+      bindEvents() {
+        this.viewPlaygroundBtn.addEventListener('click', () => this.switchView('playground'));
+        this.viewCodeBtn.addEventListener('click', () => this.switchView('code'));
+
+        this.modeRuleBtn.addEventListener('click', () => this.setMode('rule'));
+        this.modeLlmBtn.addEventListener('click', () => this.setMode('llm'));
+
+        this.chatInput.addEventListener('input', (e) => this.renderTokens(e.target.value));
+
+        this.chatForm.addEventListener('submit', (e) => this.handleSubmit(e));
+        this.clearChatBtn.addEventListener('click', () => this.resetChat());
+
+        this.samplePromptBtns.forEach(btn => {
+          btn.addEventListener('click', () => {
+            this.chatInput.value = btn.textContent.trim();
+            this.renderTokens(this.chatInput.value);
+            this.chatInput.focus();
+          });
+        });
+
+        this.tempSlider.addEventListener('input', (e) => this.handleTemperatureChange(e));
+
+        this.presetTutor.addEventListener('click', () => {
+          this.systemPromptInput.value = "You are a warm, helpful AI tutor. Answer questions simply and clearly for beginners.";
+          this.updateContextInspector();
+          this.showToast("Tutor persona applied!");
+        });
+
+        this.presetPirate.addEventListener('click', () => {
+          this.systemPromptInput.value = "You are an 18th-century pirate captain who teaches AI concepts using nautical sailing metaphors.";
+          this.updateContextInspector();
+          this.showToast("Pirate persona applied!");
+        });
+
+        this.presetConcise.addEventListener('click', () => {
+          this.systemPromptInput.value = "You are an ultra-concise technical assistant. Give strictly factual answers in under 2 sentences.";
+          this.updateContextInspector();
+          this.showToast("Strict persona applied!");
+        });
+
+        this.systemPromptInput.addEventListener('input', () => this.updateContextInspector());
+
+        this.copyRuleCodeBtn.addEventListener('click', () => {
+          const text = document.getElementById('rule-code-block').innerText;
+          this.copyText(text, "Copied RuleBasedEngine.ts!");
+        });
+
+        this.copyLlmCodeBtn.addEventListener('click', () => {
+          const text = document.getElementById('llm-code-block').innerText;
+          this.copyText(text, "Copied LLMSessionManager.ts!");
+        });
+
+        this.copyBothCodeBtn.addEventListener('click', () => {
+          const ruleText = document.getElementById('rule-code-block').innerText;
+          const llmText = document.getElementById('llm-code-block').innerText;
+          const combined = `// ================= RuleBasedEngine.ts =================\n\n${ruleText}\n\n// ================= LLMSessionManager.ts =================\n\n${llmText}`;
+          this.copyText(combined, "Copied both production code modules!");
+        });
+      }
+
+      switchView(view) {
+        if (view === 'playground') {
+          this.tabPlayground.classList.remove('hidden');
+          this.tabCode.classList.add('hidden');
+          this.viewPlaygroundBtn.className = "px-3.5 py-1.5 rounded-lg bg-white text-indigo-700 shadow-sm transition-all duration-150";
+          this.viewCodeBtn.className = "px-3.5 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 transition-all duration-150";
+        } else {
+          this.tabPlayground.classList.add('hidden');
+          this.tabCode.classList.remove('hidden');
+          this.viewCodeBtn.className = "px-3.5 py-1.5 rounded-lg bg-white text-indigo-700 shadow-sm transition-all duration-150";
+          this.viewPlaygroundBtn.className = "px-3.5 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 transition-all duration-150";
+        }
+      }
+
+      setMode(mode) {
+        this.currentMode = mode;
+        if (mode === 'rule') {
+          this.modeRuleBtn.className = "px-3 py-1.5 rounded-md bg-white text-slate-900 shadow-sm font-semibold transition";
+          this.modeLlmBtn.className = "px-3 py-1.5 rounded-md text-slate-600 hover:text-slate-900 font-medium transition";
+          
+          this.modeBanner.className = "px-4 py-2.5 bg-amber-50 border-b border-amber-100 flex items-start gap-2.5 text-xs text-amber-900 transition-colors";
+          this.modeBannerIcon.textContent = "⚡";
+          this.modeBannerIcon.className = "mt-0.5 font-bold text-amber-600 text-sm";
+          this.modeBannerTitle.textContent = "Rule-Based Active:";
+          this.modeBannerDesc.textContent = "Evaluates input against compiled regex patterns. It is completely stateless with zero memory across conversation turns.";
+          this.chatInput.placeholder = "Try keywords: 'hello', 'weather', 'help', or 'my name is Alex'...";
+        } else {
+          this.modeLlmBtn.className = "px-3 py-1.5 rounded-md bg-white text-indigo-700 shadow-sm font-semibold transition";
+          this.modeRuleBtn.className = "px-3 py-1.5 rounded-md text-slate-600 hover:text-slate-900 font-medium transition";
+          
+          this.modeBanner.className = "px-4 py-2.5 bg-indigo-50 border-b border-indigo-100 flex items-start gap-2.5 text-xs text-indigo-900 transition-colors";
+          this.modeBannerIcon.textContent = "🤖";
+          this.modeBannerIcon.className = "mt-0.5 font-bold text-indigo-600 text-sm";
+          this.modeBannerTitle.textContent = "Language Model (LLM) Active:";
+          this.modeBannerDesc.textContent = "Synthesizes answers token-by-token using your System Instruction and cumulative message history. Can remember names and generalize flexibly!";
+          this.chatInput.placeholder = "Ask any question, test multi-turn memory ('My name is Alex'), or ask for a poem...";
+        }
+        this.updateContextInspector();
+      }
+
+      handleTemperatureChange(e) {
+        const val = parseFloat(e.target.value);
+        this.tempVal.textContent = val.toFixed(1);
+        if (val <= 0.2) {
+          this.tempLabel.textContent = "Deterministic & Strict";
+          this.tempLabel.className = "text-[11px] text-blue-600 font-medium";
+        } else if (val <= 0.7) {
+          this.tempLabel.textContent = "Balanced Creative";
+          this.tempLabel.className = "text-[11px] text-indigo-600 font-medium";
+        } else {
+          this.tempLabel.textContent = "High Risk of Hallucination";
+          this.tempLabel.className = "text-[11px] text-red-600 font-medium font-semibold";
+        }
+      }
+
+      renderTokens(text) {
+        this.tokenBox.innerHTML = '';
+        if (!text || !text.trim()) {
+          this.tokenBox.innerHTML = '<span class="text-xs text-slate-400 italic">Type a message to see how it breaks into tokens...</span>';
+          this.tokenCountBadge.textContent = '~0 tokens';
+          return;
+        }
+
+        const tokens = Tokenizer.tokenize(text);
+        this.tokenCountBadge.textContent = `~${tokens.length} tokens`;
+
+        const colors = [
+          'bg-indigo-100 text-indigo-800 border-indigo-200',
+          'bg-emerald-100 text-emerald-800 border-emerald-200',
+          'bg-amber-100 text-amber-800 border-amber-200',
+          'bg-sky-100 text-sky-800 border-sky-200',
+          'bg-purple-100 text-purple-800 border-purple-200',
+          'bg-rose-100 text-rose-800 border-rose-200'
+        ];
+
+        tokens.forEach((tok, idx) => {
+          const span = document.createElement('span');
+          span.className = `inline-block px-1.5 py-0.5 rounded text-xs font-mono border ${colors[idx % colors.length]}`;
+          if (/^\s+$/.test(tok)) {
+            span.textContent = tok.replace(/ /g, '␣');
+            span.classList.add('opacity-60');
+          } else {
+            span.textContent = tok;
+          }
+          this.tokenBox.appendChild(span);
+        });
+      }
+
+      updateContextInspector() {
+        this.turnCountBadge.textContent = `${this.conversationHistory.length} turns`;
+
+        if (this.currentMode === 'rule') {
+          this.contextJsonViewer.textContent = "// RULE-BASED MODE:\n// The engine does not pass an accumulated context array.\n// Each message is evaluated independently as a single isolated string.";
+          return;
+        }
+
+        const payload = [
+          {
+            role: "system",
+            content: this.systemPromptInput.value.trim()
+          },
+          ...this.conversationHistory.map(m => ({
+            role: m.role,
+            content: m.content
+          }))
+        ];
+
+        this.contextJsonViewer.textContent = JSON.stringify(payload, null, 2);
+      }
+
+      handleSubmit(e) {
+        e.preventDefault();
+        const text = this.chatInput.value.trim();
+        if (!text) return;
+
+        const tokenCount = Tokenizer.tokenize(text).length;
+        this.conversationHistory.push({
+          role: 'user',
+          content: text,
+          meta: `<span>Tokens: <strong>~${tokenCount}</strong></span>`
+        });
+
+        this.chatInput.value = '';
+        this.renderTokens('');
+        this.renderMessages();
+
+        // Show typing indicator
+        const typingDiv = document.createElement('div');
+        typingDiv.id = 'typing-indicator';
+        typingDiv.className = 'flex items-center gap-2 text-xs text-slate-400 italic px-2 py-1';
+        typingDiv.innerHTML = `<span class="animate-pulse">Evaluating model response...</span>`;
+        this.messagesContainer.appendChild(typingDiv);
+        this.messagesContainer.scrollTop = this.messagesContainer.scrollHeight;
+
+        setTimeout(() => {
+          const ind = document.getElementById('typing-indicator');
+          if (ind) ind.remove();
+
+          let replyText = "";
+          let metaHtml = "";
+
+          if (this.currentMode === 'rule') {
+            const result = this.ruleEngine.evaluate(text);
+            replyText = result.response;
+            if (result.matched) {
+              metaHtml = `<span>Matched Rule: <strong>"${result.ruleId}"</strong> (Boundary Regex Match)</span>`;
+            } else {
+              metaHtml = `<span class="text-rose-600 font-medium">Fallback: No matching regex pattern found.</span>`;
+            }
+          } else {
+            const persona = this.systemPromptInput.value.trim();
+            const temp = this.tempSlider.value;
+            replyText = this.llmSimulator.generate(text, persona, temp);
+            const tokens = Tokenizer.tokenize(replyText).length;
+            metaHtml = `<span>Model: <strong>gpt-4o-mini</strong> • Temp: <strong>${temp}</strong> • Tokens: <strong>~${tokens}</strong></span>`;
+          }
+
+          this.conversationHistory.push({
+            role: 'assistant',
+            content: replyText,
+            meta: metaHtml
+          });
+
+          this.renderMessages();
+        }, 350);
+      }
+
+      resetChat() {
+        this.conversationHistory = [];
+        this.llmSimulator.reset();
+        this.renderMessages();
+        this.renderTokens('');
+        this.showToast("Conversation reset.");
+      }
+
+      renderMessages() {
+        this.messagesContainer.innerHTML = '';
+
+        if (this.conversationHistory.length === 0) {
+          this.messagesContainer.innerHTML = `
+            <div class="h-full flex flex-col items-center justify-center text-center p-8 text-slate-400">
+              <div class="w-12 h-12 rounded-2xl bg-slate-100 flex items-center justify-center text-slate-400 mb-3 text-2xl">
+                💬
+              </div>
+              <p class="text-sm font-semibold text-slate-600">Start the conversation</p>
+              <p class="text-xs text-slate-400 max-w-sm mt-1">
+                Test how both engines handle simple greetings, follow-ups like "What was my name?", and unexpected questions.
+              </p>
+            </div>
+          `;
+          this.updateContextInspector();
+          return;
+        }
+
+        this.conversationHistory.forEach((msg) => {
+          const isUser = msg.role === 'user';
+          const msgDiv = document.createElement('div');
+          msgDiv.className = `flex flex-col ${isUser ? 'items-end' : 'items-start'}`;
+
+          const bubble = document.createElement('div');
+          bubble.className = `max-w-[85%] rounded-2xl px-4 py-2.5 text-sm shadow-sm ${
+            isUser
+              ? 'bg-indigo-600 text-white rounded-br-sm'
+              : 'bg-slate-100 text-slate-900 rounded-bl-sm border border-slate-200'
+          }`;
+
+          bubble.innerHTML = `<div class="whitespace-pre-wrap">${this.escapeHtml(msg.content)}</div>`;
+
+          if (msg.meta) {
+            const metaDiv = document.createElement('div');
+            metaDiv.className = `text-[10px] mt-1.5 pt-1.5 border-t ${
+              isUser ? 'border-indigo-500 text-indigo-200' : 'border-slate-200 text-slate-500'
+            } flex items-center gap-1.5`;
+            metaDiv.innerHTML = msg.meta;
+            bubble.appendChild(metaDiv);
+          }
+
+          msgDiv.appendChild(bubble);
+          this.messagesContainer.appendChild(msgDiv);
+        });
+
+        this.messagesContainer.scrollTop = this.messagesContainer.scrollHeight;
+        this.updateContextInspector();
+      }
+
+      escapeHtml(str) {
+        return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      }
+
+      showToast(msg) {
+        this.toastMessage.textContent = msg;
+        this.toast.classList.remove('translate-y-16', 'opacity-0');
+        this.toast.classList.add('translate-y-0', 'opacity-100');
+        setTimeout(() => {
+          this.toast.classList.remove('translate-y-0', 'opacity-100');
+          this.toast.classList.add('translate-y-16', 'opacity-0');
+        }, 2200);
+      }
+
+      copyText(text, successMsg) {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(text).then(() => {
+            this.showToast(successMsg);
+          }).catch(() => {
+            this.fallbackCopy(text, successMsg);
+          });
+        } else {
+          this.fallbackCopy(text, successMsg);
+        }
+      }
+
+      fallbackCopy(text, successMsg) {
+        const textarea = document.createElement('textarea');
+        textarea.value = text;
+        textarea.style.position = 'fixed';
+        textarea.style.opacity = '0';
+        document.body.appendChild(textarea);
+        textarea.select();
+        try {
+          document.execCommand('copy');
+          this.showToast(successMsg);
+        } catch (err) {
+          this.showToast("Press Ctrl+C to copy");
+        }
+        document.body.removeChild(textarea);
+      }
+
+      render() {
+        this.renderMessages();
+        this.updateContextInspector();
+      }
+    }
+
+    // Initialize application on load
+    window.addEventListener('DOMContentLoaded', () => {
+      new ChatUIController();
+    });
+  </script>
+</body>
+</html>
