@@ -3,20 +3,29 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hunter's Projects & Builds</title>
+    <title>Hunter's Special Schedule</title>
     <link rel="icon" type="image/png" href="favicon.png">
     <style>
+        /* =========================================
+           SECTION 1: THEME & COLORS
+        ========================================= */
         :root {
             --bg-color: #050505;          
             --card-bg: rgba(30, 15, 45, 0.85); 
             --text-main: #f3f4f6;          
             --text-dim: #d8b4fe;          
             --accent-a: #f97316;          
+            --accent-b: #a855f7;          
             --highlight: #84cc16;         
+            --robotics: #ef4444;          
+            
             --font-choice: 'Inter', sans-serif;
             --bg-image: none;
         }
 
+        /* =========================================
+           SECTION 2: CORE LAYOUT & TYPOGRAPHY
+        ========================================= */
         body {
             font-family: var(--font-choice);
             background-color: var(--bg-color);
@@ -25,197 +34,58 @@
             background-position: center;
             background-attachment: fixed;
             color: var(--text-main);
-            margin: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            min-height: 100vh;
-            padding: 25px 20px;
-            box-sizing: border-box;
+            margin: 0; display: flex; flex-direction: column; align-items: center;
+            min-height: 100vh; padding: 20px; box-sizing: border-box;
         }
-
+        
         body::before {
-            content: "";
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.5);
-            z-index: -1;
-            display: var(--overlay-display, none);
+            content: ""; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5); z-index: -1; display: var(--overlay-display, none);
         }
 
-        .header {
-            text-align: center;
-            margin-bottom: 20px;
-        }
+        .header { text-align: center; margin-bottom: 10px; z-index: 1; }
+        .header h1 { font-size: 1.1rem; color: var(--text-dim); margin: 0; font-weight: 400; opacity: 0.8; letter-spacing: 2px; }
+        #day-display { font-size: clamp(2rem, 8vw, 3.5rem); font-weight: 900; margin: 5px 0; text-transform: uppercase; }
 
-        .header h1 {
-            font-size: 1.1rem;
-            color: var(--text-dim);
-            margin: 0;
-            font-weight: 400;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-        }
+        .is-a #day-display { color: var(--accent-a); text-shadow: 0 0 20px rgba(249, 115, 22, 0.5); }
+        .is-b #day-display { color: var(--accent-b); text-shadow: 0 0 20px rgba(168, 85, 247, 0.5); }
 
-        .header h2 {
-            font-size: clamp(1.8rem, 6vw, 2.6rem);
-            margin: 5px 0 0 0;
-            font-weight: 900;
-            color: var(--highlight);
-            text-shadow: 0 0 20px rgba(132, 204, 22, 0.4);
-        }
+        .container { width: 100%; max-width: 500px; display: flex; flex-direction: column; gap: 15px; flex-grow: 1; z-index: 1; }
+        .card { background: var(--card-bg); border-radius: 16px; overflow: hidden; backdrop-filter: blur(10px); box-shadow: 0 10px 30px rgba(0,0,0,0.7); border: 1px solid rgba(255,255,255,0.05); }
+        
+        /* =========================================
+           SECTION 3: TABLES & EVENT LISTS
+        ========================================= */
+        table { width: 100%; border-collapse: collapse; }
+        th { background: rgba(0,0,0,0.4); padding: 12px; text-align: left; color: var(--text-dim); font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; }
+        td { padding: 12px 15px; border-bottom: 1px solid rgba(255,255,255,0.05); vertical-align: middle; }
 
-        .container {
-            width: 100%;
-            max-width: 500px;
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
+        .time-col { color: var(--text-dim); width: 45%; font-size: 0.8rem; font-weight: 500; white-space: nowrap; }
+        .current-row { background: rgba(132, 204, 22, 0.15); border-left: 4px solid var(--highlight); }
 
-        .card {
-            background: var(--card-bg);
-            border-radius: 16px;
-            overflow: hidden;
-            backdrop-filter: blur(10px);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.7);
-            border: 1px solid rgba(255,255,255,0.05);
-        }
+        .event-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 15px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .event-info { display: flex; flex-direction: column; }
+        .event-time { font-size: 0.75rem; color: var(--highlight); font-weight: bold; }
+        .delete-btn { background: none; border: none; color: #ef4444; cursor: pointer; font-size: 1.1rem; padding: 5px; }
 
-        .card-header-banner {
-            background: rgba(0,0,0,0.35);
-            padding: 10px 15px;
-            font-size: 0.7rem;
-            text-transform: uppercase;
-            color: var(--text-dim);
-            letter-spacing: 1px;
-            font-weight: 600;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .project-item {
-            padding: 16px;
-            border-bottom: 1px solid rgba(255,255,255,0.05);
-        }
-
-        .project-item:last-child {
-            border-bottom: none;
-        }
-
-        .project-title-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 6px;
-        }
-
-        .project-name {
-            font-size: 1rem;
-            font-weight: 700;
-            color: var(--text-main);
-        }
-
-        .badge-status {
-            font-size: 0.65rem;
-            text-transform: uppercase;
-            padding: 2px 7px;
-            border-radius: 4px;
-            font-weight: 700;
-            letter-spacing: 0.5px;
-        }
-
-        .badge-live {
-            background: rgba(132, 204, 22, 0.2);
-            color: var(--highlight);
-            border: 1px solid rgba(132, 204, 22, 0.4);
-        }
-
-        .badge-git {
-            background: rgba(168, 85, 247, 0.2);
-            color: var(--text-dim);
-            border: 1px solid rgba(168, 85, 247, 0.4);
-        }
-
-        .project-description {
-            font-size: 0.82rem;
-            color: #9ca3af;
-            line-height: 1.45;
-            margin: 0 0 12px 0;
-        }
-
-        .tag-row {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 6px;
-            margin-bottom: 14px;
-        }
-
-        .tag-pill {
-            background: rgba(0, 0, 0, 0.45);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            color: var(--text-dim);
-            font-size: 0.7rem;
-            padding: 2px 8px;
-            border-radius: 4px;
-        }
-
-        .btn-group {
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-        }
-
-        .action-btn {
-            font-size: 0.75rem;
-            font-weight: 600;
-            padding: 7px 14px;
-            border-radius: 6px;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            transition: all 0.2s ease;
-        }
-
-        .btn-launch {
-            background: #2563eb;
-            color: #ffffff;
-            border: 1px solid #3b82f6;
-        }
-
-        .btn-launch:hover {
-            background: #1d4ed8;
-            box-shadow: 0 0 12px rgba(37, 99, 235, 0.5);
-        }
-
-        .btn-code {
-            background: rgba(30, 27, 75, 0.7);
-            color: var(--text-main);
-            border: 1px solid var(--text-dim);
-        }
-
-        .btn-code:hover {
-            background: #1e1b4b;
-            border-color: var(--highlight);
-        }
-
-        .nav-actions {
+        /* =========================================
+           SECTION 4: PORTAL BUTTONS & FOOTER
+        ========================================= */
+        .portal-stack {
             display: flex;
             flex-direction: column;
             gap: 10px;
-            margin-top: 20px;
             align-items: center;
-            width: 100%;
+            margin-top: 5px;
+            z-index: 1;
         }
 
-        .nav-btn {
+        .portal-btn {
             display: block;
             width: 100%;
             max-width: 260px;
             text-align: center;
-            padding: 10px 18px;
+            padding: 10px 20px;
             background: #1e1b4b;
             color: var(--text-main);
             text-decoration: none;
@@ -223,94 +93,284 @@
             border: 1px solid var(--text-dim);
             font-size: 0.85rem;
             box-shadow: 0 4px 10px rgba(0,0,0,0.5);
-            transition: 0.2s;
+            transition: 0.2s ease;
             box-sizing: border-box;
         }
 
-        .nav-btn:hover {
+        .portal-btn:hover {
             border-color: var(--highlight);
             transform: translateY(-2px);
         }
+
+        .footer { margin-top: 20px; text-align: center; padding-bottom: 20px; z-index: 1; }
+        #clock-display { font-size: 2.2rem; font-weight: 700; text-shadow: 0 0 10px rgba(255,255,255,0.2); }
+        #date-display { font-size: 0.85rem; color: var(--text-dim); }
+
+        #edit-btn { position: fixed; bottom: 20px; left: 20px; background: #1e1b4b; color: var(--text-main); width: 45px; height: 45px; border-radius: 50%; cursor: pointer; border: 1px solid var(--text-dim); z-index: 100; box-shadow: 0 4px 10px rgba(0,0,0,0.8); }
+        #settings-menu { position: fixed; bottom: 75px; left: 20px; background: #1e1b4b; padding: 20px; border-radius: 12px; display: none; flex-direction: column; gap: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.8); border: 1px solid rgba(255,255,255,0.1); z-index: 101; width: 260px; max-height: 70vh; overflow-y: auto; }
+        .setting-item { display: flex; flex-direction: column; gap: 5px; font-size: 0.8rem; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px; }
+        input, select { padding: 8px; border-radius: 6px; background: #050505; color: white; border: 1px solid #3b0764; font-size: 0.75rem; outline: none; }
+        input:focus { border-color: var(--accent-a); }
     </style>
 </head>
-<body>
+<body id="body-tag">
 
+    <!-- =========================================
+         SECTION 5: HTML STRUCTURE
+    ========================================= -->
     <div class="header">
-        <h1>Deployment Log</h1>
-        <h2>Finished Projects</h2>
+        <h1>Hunter's Schedule</h1>
+        <div id="day-display">Loading...</div>
     </div>
 
     <div class="container">
-        <div class="card">
-            <div class="card-header-banner">
-                <span>Completed Projects & Live Tests</span>
-                <span style="font-size: 0.65rem; color: var(--highlight);">Sandbox Ready</span>
-            </div>
-
-            <!-- Project Card: LLMshowcase -->
-            <div class="project-item">
-                <div class="project-title-row">
-                    <span class="project-name">LLM Showcase</span>
-                    <span class="badge-status badge-live">Live</span>
-                </div>
-                <p class="project-description">
-                    Interactive LLM session manager and rules-based demonstration sandbox with real-time UI components.
-                </p>
-                <div class="tag-row">
-                    <span class="tag-pill">TypeScript</span>
-                    <span class="tag-pill">HTML5</span>
-                    <span class="tag-pill">AI Engine</span>
-                </div>
-                <div class="btn-group">
-                    <!-- Links to your LLMshowcase.html file inside the projects/ folder -->
-                    <a href="projects/LLMshowcase.html" class="action-btn btn-launch" target="_blank" rel="noopener noreferrer">
-                        🚀 Launch Test
-                    </a>
-                    <a href="https://github.com/SaberAltered" class="action-btn btn-code" target="_blank" rel="noopener noreferrer">
-                        Repository
-                    </a>
-                </div>
-            </div>
-
-            <!-- GitHub Central Hub -->
-            <div class="project-item">
-                <div class="project-title-row">
-                    <span class="project-name">GitHub Repositories</span>
-                    <span class="badge-status badge-git">Public</span>
-                </div>
-                <p class="project-description">
-                    Centralized source archive containing development tools, configurations, and public repositories.
-                </p>
-                <div class="tag-row">
-                    <span class="tag-pill">Python</span>
-                    <span class="tag-pill">Linux</span>
-                    <span class="tag-pill">Automation</span>
-                </div>
-                <div class="btn-group">
-                    <a href="https://github.com/SaberAltered" class="action-btn btn-code" target="_blank" rel="noopener noreferrer">
-                        📦 View Profile & Repos
-                    </a>
-                </div>
-            </div>
+        <!-- Robotics Alert -->
+        <div id="robotics-alert" class="card" style="display:none; padding:15px; border:1px solid var(--robotics); background:rgba(239, 68, 68, 0.1);">
+            <h3 style="margin:0; color:var(--robotics); font-size:0.9rem;">🎃 Robotics Today</h3>
+            <p id="robotics-time" style="margin: 5px 0 0 0; font-size: 0.8rem;"></p>
         </div>
 
-        <!-- Navigation Buttons -->
-        <div class="nav-actions">
-            <a href="index.html" class="nav-btn">
-                ⬅️ Back to Schedule
-            </a>
-            <a href="social.html" class="nav-btn">
+        <!-- Evening Events List -->
+        <div class="card" id="events-card" style="display:none;">
+            <div style="background: rgba(0,0,0,0.3); padding: 10px 15px; font-size: 0.7rem; text-transform: uppercase; color: var(--text-dim); letter-spacing: 1px;">Tonight's Tasks</div>
+            <div id="events-list"></div>
+        </div>
+
+        <!-- Main Schedule Table -->
+        <div class="card">
+            <table>
+                <thead><tr><th>Time</th><th>Class</th></tr></thead>
+                <tbody id="schedule-body"></tbody>
+            </table>
+        </div>
+        
+        <!-- BUTTONS: SOCIAL BOARD & PROJECTS -->
+        <div class="portal-stack">
+            <a href="social.html" class="portal-btn">
                 📡 Open Social Board
+            </a>
+            <a href="projects.html" class="portal-btn">
+                🚀 Projects & Code
             </a>
         </div>
     </div>
 
-    <script>
+    <div class="footer">
+        <div id="clock-display"></div>
+        <div id="date-display"></div>
+    </div>
+
+    <!-- Settings & Quick Add -->
+    <button id="edit-btn" title="Edit Schedule/Theme">✎</button>
+    <div id="settings-menu">
+        <div class="setting-item">
+            <label style="font-weight: bold; color: var(--highlight);">+ Quick Add Event (Local)</label>
+            <input type="text" id="event-name" placeholder="What are you doing?">
+            <div style="display:flex; gap:5px;">
+                <input type="text" id="event-time-val" placeholder="Time (ex: 7 PM)" style="flex-grow:1;">
+                <button onclick="addPersonalEvent()" style="background:var(--highlight); color:#000; font-weight:bold; border:none; padding:5px 10px; border-radius:4px; cursor:pointer;">Add</button>
+            </div>
+        </div>
+        <div class="setting-item">
+            <label style="color: var(--text-dim);">Background Image URL</label>
+            <input type="text" id="img-url" placeholder="Paste link here...">
+        </div>
+        <button onclick="toggleMenu()" style="margin-top:5px; cursor:pointer; background: #3b0764; color: white; border: none; padding: 8px; border-radius: 4px;">Close Settings</button>
+    </div>
+
+<script>
+    /* =========================================
+       SECTION 6: SCHEDULE CONFIGURATION
+    ========================================= */
+    const schoolSchedule = {
+        "A": [
+            { name: "Community Release", start: "08:30", end: "09:55", note: "First block" },
+            { name: "PSP", start: "10:10", end: "11:35" },
+            { name: "Economics", start: "11:50", end: "13:15" },
+            { name: "Lunch", start: "13:15", end: "13:45" },
+            { name: "School Store at the CA", start: "14:00", end: "15:25", note: "Last Block Of The Day" }
+        ],
+        "B": [
+            { name: "Aviation", start: "08:30", end: "09:55" },
+            { name: "Off Block", start: "10:10", end: "11:35" },
+            { name: "English", start: "11:50", end: "13:15" },
+            { name: "Lunch", start: "13:15", end: "13:45" },
+            { name: "School Store", start: "14:00", end: "15:25", note: "Last Block Of The Day" }
+        ]
+    };
+
+    const startDate = new Date("2026-08-31T00:00:00");
+    const startType = "A";
+    
+    const holidays = [
+        "2026-09-04", "2026-09-07", "2026-09-25",
+        "2026-10-15", "2026-10-16", "2026-11-09",
+        "2026-11-25", "2026-11-26", "2026-11-27",
+        "2026-12-23", "2026-12-24", "2026-12-25", "2026-12-28", "2026-12-29", "2026-12-30", "2026-12-31",
+        "2027-01-01", "2027-01-18", "2027-02-15",
+        "2027-03-08", "2027-03-09", "2027-03-26", "2027-03-29", "2027-04-23"
+    ];
+
+    /* =========================================
+       SECTION 7: DATA & EVENT LOGIC
+    ========================================= */
+    let personalEvents = JSON.parse(localStorage.getItem('hunter-events')) || [];
+
+    async function fetchGlobalEvents() {
+        const url = "https://raw.githubusercontent.com/SaberAltered/MHS_SCHEDULE/main/events.json?v=" + Date.now();
+        try {
+            const response = await fetch(url);
+            if (!response.ok) return;
+            const globalEvents = await response.json();
+        
+            const localIds = new Set(personalEvents.map(e => e.id));
+            globalEvents.forEach(ge => {
+                if (!localIds.has(ge.id)) personalEvents.push(ge);
+            });
+            renderEvents();
+        } catch (e) { console.log("Remote load failed."); }
+    }
+
+    function addPersonalEvent() {
+        const name = document.getElementById('event-name').value;
+        const time = document.getElementById('event-time-val').value;
+        if(name && time) {
+            personalEvents.push({ id: Date.now(), name, time });
+            localStorage.setItem('hunter-events', JSON.stringify(personalEvents));
+            document.getElementById('event-name').value = '';
+            document.getElementById('event-time-val').value = '';
+            renderEvents();
+        }
+    }
+
+    function deleteEvent(id) {
+        personalEvents = personalEvents.filter(e => e.id !== id);
+        localStorage.setItem('hunter-events', JSON.stringify(personalEvents));
+        renderEvents();
+    }
+
+    function renderEvents() {
+        const listEl = document.getElementById('events-list');
+        const cardEl = document.getElementById('events-card');
+        if(personalEvents.length === 0) { cardEl.style.display = 'none'; return; }
+        cardEl.style.display = 'block';
+        listEl.innerHTML = personalEvents.map(e => `
+            <div class="event-item">
+                <div class="event-info"><span style="font-size:0.9rem;">${e.name}</span><span class="event-time">${e.time}</span></div>
+                <button class="delete-btn" onclick="deleteEvent(${e.id})">×</button>
+            </div>`).join('');
+    }
+
+    /* =========================================
+       SECTION 8: CORE ENGINE & RENDERING
+    ========================================= */
+    function applyTheme() {
         const img = localStorage.getItem('hunter-img');
-        if (img) {
+        if(img) {
             document.documentElement.style.setProperty('--bg-image', `url('${img}')`);
             document.documentElement.style.setProperty('--overlay-display', 'block');
         }
-    </script>
+    }
+
+    function toggleMenu() {
+        const menu = document.getElementById('settings-menu');
+        menu.style.display = (menu.style.display === 'flex') ? 'none' : 'flex';
+    }
+
+    document.getElementById('edit-btn').onclick = toggleMenu;
+    document.getElementById('img-url').onchange = (e) => {
+        localStorage.setItem('hunter-img', e.target.value);
+        applyTheme();
+    };
+
+    function to12Hour(time24) {
+        let [hrs, mins] = time24.split(':');
+        let period = hrs >= 12 ? 'PM' : 'AM';
+        hrs = hrs % 12 || 12;
+        return `${hrs}:${mins} ${period}`;
+    }
+
+    function getDayType(date) {
+        let count = 0;
+        let cur = new Date(startDate);
+        cur.setHours(0,0,0,0);
+        let target = new Date(date);
+        target.setHours(0,0,0,0);
+        
+        while (cur < target) {
+            let offsetDate = new Date(cur.getTime() - (cur.getTimezoneOffset() * 60000));
+            let dateStr = offsetDate.toISOString().split('T')[0];
+            
+            if (cur.getDay() !== 0 && cur.getDay() !== 6 && !holidays.includes(dateStr)) { count++; }
+            cur.setDate(cur.getDate() + 1);
+        }
+        return (count % 2 === 0) ? startType : (startType === "A" ? "B" : "A");
+    }
+
+    function update() {
+        const now = new Date();
+        const dayOfWeek = now.getDay();
+        const offsetDate = new Date(now.getTime() - (now.getTimezoneOffset() * 60000));
+        const todayStr = offsetDate.toISOString().split('T')[0];
+        
+        const isWeekend = (dayOfWeek === 0 || dayOfWeek === 6);
+        const isHoliday = holidays.includes(todayStr);
+        const type = getDayType(now);
+
+        document.getElementById("clock-display").innerText = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        document.getElementById("date-display").innerText = now.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' });
+        
+        if (isWeekend) {
+            document.getElementById("day-display").innerText = dayOfWeek === 6 ? "Saturday" : "Sunday";
+            document.getElementById("body-tag").className = "";
+        } else if (isHoliday) {
+            document.getElementById("day-display").innerText = "No School";
+            document.getElementById("body-tag").className = "";
+        } else {
+            document.getElementById("day-display").innerText = type + " Day";
+            document.getElementById("body-tag").className = "is-" + type.toLowerCase();
+        }
+
+        const robAlert = document.getElementById("robotics-alert");
+        const robTime = document.getElementById("robotics-time");
+        if (dayOfWeek === 2 || dayOfWeek === 4) {
+            robAlert.style.display = "block"; robTime.innerText = "5:30-6:00 PM Meeting";
+        } else if (dayOfWeek === 6) {
+            robAlert.style.display = "block"; robTime.innerText = "Workshop: 7:00 AM - 3:00 PM";
+        } else { 
+            robAlert.style.display = "none"; 
+        }
+
+        let html = "";
+        if (isWeekend || isHoliday) {
+            html = `<tr><td colspan='2' style='padding:30px; text-align:center; color:var(--text-dim)'>${isHoliday ? "Holiday / No Classes" : "No school today!"}</td></tr>`;
+        } else {
+            const list = schoolSchedule[type];
+            const timeNow = now.getHours().toString().padStart(2, '0') + ":" + now.getMinutes().toString().padStart(2, '0');
+            
+            let hasHighlighted = false;
+            html = list.map(item => {
+                const active = timeNow >= item.start && timeNow < item.end && !hasHighlighted;
+                if (active) hasHighlighted = true;
+                
+                return `<tr class="${active ? 'current-row' : ''}">
+                    <td class="time-col">${to12Hour(item.start)} - ${to12Hour(item.end)}</td>
+                    <td>${item.name}${item.note ? `<span style="display:block; font-size:0.7rem; color:var(--text-dim); font-style:italic;">${item.note}</span>` : ''}</td>
+                </tr>`;
+            }).join('');
+        }
+        
+        document.getElementById("schedule-body").innerHTML = html;
+    }
+
+    /* =========================================
+       SECTION 9: INITIALIZATION
+    ========================================= */
+    applyTheme();
+    renderEvents();
+    fetchGlobalEvents();
+    update();
+    setInterval(update, 1000);
+</script>
 </body>
 </html>
