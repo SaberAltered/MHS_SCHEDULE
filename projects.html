@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hunter's Projects & Code Archive</title>
+    <link rel="icon" type="image/png" href="favicon.png">
+    <style>
+        /* =========================================
+           SECTION 1: THEME & COLOR VARIABLES
+        ========================================= */
+        :root {
+            --bg-color: #050505;          
+            --card-bg: rgba(30, 15, 45, 0.85); 
+            --text-main: #f3f4f6;          
+            --text-dim: #d8b4fe;          
+            --accent-a: #f97316;          
+            --accent-b: #a855f7;          
+            --highlight: #84cc16;         
+            --robotics: #ef4444;          
+            
+            --font-choice: 'Inter', sans-serif;
+            --bg-image: none;
+        }
+
+        /* =========================================
+           SECTION 2: CORE LAYOUT
+        ========================================= */
+        body {
+            font-family: var(--font-choice);
+            background-color: var(--bg-color);
+            background-image: var(--bg-image);
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            color: var(--text-main);
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: -1;
+            display: var(--overlay-display, none);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 12px;
+            z-index: 1;
+        }
+
+        .header h1 {
+            font-size: 1.1rem;
+            color: var(--text-dim);
+            margin: 0;
+            font-weight: 400;
+            opacity: 0.8;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .header h2 {
+            font-size: clamp(2rem, 8vw, 3rem);
+            font-weight: 900;
+            margin: 5px 0 0 0;
+            text-transform: uppercase;
+            color: var(--highlight);
+            text-shadow: 0 0 20px rgba(132, 204, 22, 0.4);
+        }
+
+        .container {
+            width: 100%;
+            max-width: 500px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            flex-grow: 1;
+            z-index: 1;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.7);
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+
+        /* =========================================
+           SECTION 3: PROJECT CARDS & LABELS
+        ========================================= */
+        .card-header-banner {
+            background: rgba(0, 0, 0, 0.4);
+            padding: 12px 16px;
+            font-size: 0.72rem;
+            text-transform: uppercase;
+            color: var(--text-dim);
+            letter-spacing: 1px;
+            font-weight: 700;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .project-item {
+            padding: 16px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .project-item:last-child {
+            border-bottom: none;
+        }
+
+        .project-title-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 6px;
+        }
+
+        .project-name {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        .badge-status {
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        .badge-live {
+            background: rgba(132, 204, 22, 0.2);
+            color: var(--highlight);
+            border: 1px solid rgba(132, 204, 22, 0.4);
+        }
+
+        .badge-git {
+            background: rgba(168, 85, 247, 0.2);
+            color: var(--text-dim);
+            border: 1px solid rgba(168, 85, 247, 0.4);
+        }
+
+        .project-description {
+            font-size: 0.82rem;
+            color: #9ca3af;
+            line-height: 1.45;
+            margin: 0 0 12px 0;
+        }
+
+        .tag-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-bottom: 14px;
+        }
+
+        .tag-pill {
+            background: rgba(0, 0, 0, 0.45);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            color: var(--text-dim);
+            font-size: 0.7rem;
+            padding: 3px 8px;
+            border-radius: 4px;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .action-btn {
+            font-size: 0.78rem;
+            font-weight: 600;
+            padding: 8px 14px;
+            border-radius: 6px;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s ease;
+        }
+
+        .btn-launch {
+            background: #2563eb;
+            color: #ffffff;
+            border: 1px solid #3b82f6;
+        }
+
+        .btn-launch:hover {
+            background: #1d4ed8;
+            box-shadow: 0 0 12px rgba(37, 99, 235, 0.5);
+            transform: translateY(-1px);
+        }
+
+        .btn-code {
+            background: rgba(30, 27, 75, 0.7);
+            color: var(--text-main);
+            border: 1px solid var(--text-dim);
+        }
+
+        .btn-code:hover {
+            background: #1e1b4b;
+            border-color: var(--highlight);
+            transform: translateY(-1px);
+        }
+
+        /* =========================================
+           SECTION 4: NAVIGATION & FOOTER
+        ========================================= */
+        .portal-stack {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            align-items: center;
+            margin-top: 10px;
+            z-index: 1;
+            width: 100%;
+        }
+
+        .portal-btn {
+            display: block;
+            width: 100%;
+            max-width: 260px;
+            text-align: center;
+            padding: 10px 20px;
+            background: #1e1b4b;
+            color: var(--text-main);
+            text-decoration: none;
+            border-radius: 8px;
+            border: 1px solid var(--text-dim);
+            font-size: 0.85rem;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+            transition: 0.2s ease;
+            box-sizing: border-box;
+        }
+
+        .portal-btn:hover {
+            border-color: var(--highlight);
+            transform: translateY(-2px);
+        }
+
+        .footer {
+            margin-top: 25px;
+            text-align: center;
+            padding-bottom: 20px;
+            z-index: 1;
+        }
+
+        #clock-display {
+            font-size: 1.8rem;
+            font-weight: 700;
+            text-shadow: 0 0 10px rgba(255,255,255,0.2);
+        }
+
+        #date-display {
+            font-size: 0.85rem;
+            color: var(--text-dim);
+            margin-top: 2px;
+        }
+    </style>
+</head>
+<body id="body-tag">
+
+    <div class="header">
+        <h1>Deployment Log</h1>
+        <h2>Finished Projects</h2>
+    </div>
+
+    <div class="container">
+        <div class="card">
+            <div class="card-header-banner">
+                <span>Deployments & Sandbox</span>
+                <span style="font-size: 0.65rem; color: var(--highlight);">Active</span>
+            </div>
+
+            <!-- Project 1: LLM Showcase Live Sandbox -->
+            <div class="project-item">
+                <div class="project-title-row">
+                    <span class="project-name">LLM Showcase</span>
+                    <span class="badge-status badge-live">Live Test</span>
+                </div>
+                <p class="project-description">
+                    Interactive LLM session manager, prompt testing sandbox, and rule-based parsing engine.
+                </p>
+                <div class="tag-row">
+                    <span class="tag-pill">TypeScript</span>
+                    <span class="tag-pill">HTML5</span>
+                    <span class="tag-pill">LLM Sandbox</span>
+                </div>
+                <div class="btn-group">
+                    <!-- Opens your uploaded HTML file in projects/LLMshowcase.html -->
+                    <a href="projects/LLMshowcase.html" class="action-btn btn-launch" target="_blank" rel="noopener noreferrer">
+                        🚀 Launch Test
+                    </a>
+                    <a href="https://github.com/SaberAltered/MHS_SCHEDULE" class="action-btn btn-code" target="_blank" rel="noopener noreferrer">
+                        Repository
+                    </a>
+                </div>
+            </div>
+
+            <!-- Project 2: Public GitHub Repositories -->
+            <div class="project-item">
+                <div class="project-title-row">
+                    <span class="project-name">GitHub Archive</span>
+                    <span class="badge-status badge-git">Public</span>
+                </div>
+                <p class="project-description">
+                    Centralized source repositories for software configurations, shell automation, and hardware builds.
+                </p>
+                <div class="tag-row">
+                    <span class="tag-pill">Python</span>
+                    <span class="tag-pill">Linux</span>
+                    <span class="tag-pill">Git</span>
+                </div>
+                <div class="btn-group">
+                    <a href="https://github.com/SaberAltered" class="action-btn btn-code" target="_blank" rel="noopener noreferrer">
+                        📦 View SaberAltered Repos
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Navigation Stack -->
+        <div class="portal-stack">
+            <a href="index.html" class="portal-btn">
+                📅 Back to Schedule
+            </a>
+            <a href="social.html" class="portal-btn">
+                📡 Open Social Board
+            </a>
+        </div>
+    </div>
+
+    <div class="footer">
+        <div id="clock-display"></div>
+        <div id="date-display"></div>
+    </div>
+
+    <script>
+        // Apply user background wallpaper from localStorage if set in index.html
+        const savedImg = localStorage.getItem('hunter-img');
+        if (savedImg) {
+            document.documentElement.style.setProperty('--bg-image', `url('${savedImg}')`);
+            document.documentElement.style.setProperty('--overlay-display', 'block');
+        }
+
+        // Live clock update for consistency across pages
+        function updateClock() {
+            const now = new Date();
+            document.getElementById("clock-display").innerText = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            document.getElementById("date-display").innerText = now.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' });
+        }
+        updateClock();
+        setInterval(updateClock, 1000);
+    </script>
+</body>
+</html>
