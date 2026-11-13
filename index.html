@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hunter's Special Schedule — Elation Edition</title>
+    <title>Hunter's Special Schedule — Honkai Edition</title>
     <link rel="icon" type="image/png" href="art/favicon.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -540,6 +540,16 @@
                     <button id="test-a-btn" class="menu-btn">Aha Day</button>
                     <button id="test-b-btn" class="menu-btn">Black Swan</button>
                 </div>
+                <div class="test-btn-row">
+                    <button class="menu-btn test-time-btn active-test" data-time="">Real Time</button>
+                    <button class="menu-btn test-time-btn" data-time="08:45">8:45 AM</button>
+                    <button class="menu-btn test-time-btn" data-time="13:20">1:20 PM</button>
+                    <button class="menu-btn test-time-btn" data-time="14:30">2:30 PM</button>
+                </div>
+                <div class="test-btn-row">
+                    <button id="test-reload-events-btn" class="menu-btn" style="background: rgba(56, 189, 248, 0.18); color: #bae6fd;">Reload events.json</button>
+                    <button id="test-clear-storage-btn" class="menu-btn" style="background: rgba(251, 191, 36, 0.18); color: #fde68a;">Clear Local Data</button>
+                </div>
                 <button id="lock-test-btn" class="menu-btn" style="background: rgba(244, 63, 94, 0.2); color: #fda4af;">Lock Test Mode</button>
             </div>
         </div>
@@ -672,8 +682,10 @@
 
     let currentActiveType = "A";
     let testDayOverride = null;
+    let testTimeOverride = null;
     try {
         testDayOverride = sessionStorage.getItem('hunter-test-day');
+        testTimeOverride = sessionStorage.getItem('hunter-test-time');
     } catch (e) {}
 
     function applyTheme() {
@@ -772,7 +784,7 @@
 
         const testBadge = document.getElementById("test-badge");
         if (testBadge) {
-            testBadge.style.display = testDayOverride ? "block" : "none";
+            testBadge.style.display = (testDayOverride || testTimeOverride) ? "block" : "none";
         }
 
         document.getElementById("clock-display").innerText = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -808,7 +820,7 @@
             html = `<tr><td colspan='2' style='padding:30px; text-align:center; color:var(--text-dim)'>${isHoliday ? "Holiday / No Classes" : "No school today!"}</td></tr>`;
         } else {
             const list = schoolSchedule[type];
-            const timeNow = now.getHours().toString().padStart(2, '0') + ":" + now.getMinutes().toString().padStart(2, '0');
+            const timeNow = testTimeOverride || (now.getHours().toString().padStart(2, '0') + ":" + now.getMinutes().toString().padStart(2, '0'));
 
             let hasHighlighted = false;
             html = list.map(item => {
@@ -1059,10 +1071,46 @@
         document.getElementById('test-controls').style.display = 'none';
         document.getElementById('test-lock-row').style.display = 'flex';
     });
+    function setTestTime(val) {
+        testTimeOverride = val || null;
+        try {
+            if (testTimeOverride) sessionStorage.setItem('hunter-test-time', testTimeOverride);
+            else sessionStorage.removeItem('hunter-test-time');
+        } catch (e) {}
+        document.querySelectorAll('.test-time-btn').forEach(btn => {
+            btn.classList.toggle('active-test', (btn.dataset.time || null) === testTimeOverride);
+        });
+        update();
+    }
+
     document.getElementById('test-auto-btn').addEventListener('click', () => setTestDay(null));
     document.getElementById('test-a-btn').addEventListener('click', () => setTestDay('A'));
     document.getElementById('test-b-btn').addEventListener('click', () => setTestDay('B'));
+    document.querySelectorAll('.test-time-btn').forEach(btn => {
+        btn.addEventListener('click', () => setTestTime(btn.dataset.time));
+    });
+    document.getElementById('test-reload-events-btn').addEventListener('click', async (e) => {
+        const btn = e.currentTarget;
+        btn.innerText = 'Reloading...';
+        await fetchGlobalEvents();
+        btn.innerText = 'Reloaded!';
+        setTimeout(() => { btn.innerText = 'Reload events.json'; }, 1200);
+    });
+    document.getElementById('test-clear-storage-btn').addEventListener('click', (e) => {
+        try {
+            localStorage.removeItem('hunter-events');
+            localStorage.removeItem('hunter-img');
+        } catch (err) {}
+        personalEvents = [];
+        document.getElementById('img-url').value = '';
+        applyTheme();
+        renderEvents();
+        const btn = e.currentTarget;
+        btn.innerText = 'Cleared!';
+        setTimeout(() => { btn.innerText = 'Clear Local Data'; }, 1200);
+    });
     setTestDay(testDayOverride);
+    setTestTime(testTimeOverride);
 </script>
 </body>
 </html>
