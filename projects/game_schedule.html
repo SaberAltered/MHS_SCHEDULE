@@ -113,7 +113,6 @@
     
     body.weakness-implanted #pageTitleHeading {
       color: #f5d0fe !important; 
-      text-shadow: 2px 0 0px #06b6d4, -2px 0 0px #c026d3;
       letter-spacing: 0.5px;
     }
     
@@ -180,6 +179,14 @@
       box-shadow: 0 0 10px #ea580c;
       pointer-events: none;
       z-index: 9999;
+    }
+
+    /* =========================================
+       ACCOUNT #77 OVERCLOCK CSS
+       ========================================= */
+    body.overclocked-77 * {
+      transition-duration: 0.1s !important;
+      animation-duration: 0.5s !important;
     }
   </style>
 </head>
@@ -429,14 +436,14 @@
     Reboot Reality
   </button>
 
-  <!-- Level 999 Activation Splash Screen -->
+  <!-- Dynamic Activation Splash Screen -->
   <div id="punklordeSplash" class="fixed inset-0 z-[9999] hidden items-center justify-center bg-slate-950/80 backdrop-blur-sm transition-all duration-300 opacity-0 pointer-events-none">
     <div class="relative border border-fuchsia-500/50 bg-slate-900/90 p-8 rounded-xl shadow-[0_0_30px_rgba(192,38,211,0.3)] text-center overflow-hidden w-[90%] max-w-lg">
       <div class="absolute inset-0 pointer-events-none bg-[linear-gradient(transparent_50%,rgba(192,38,211,0.1)_50%)] bg-[length:100%_4px]"></div>
-      <h2 class="relative z-10 text-fuchsia-400 font-mono text-2xl sm:text-4xl font-bold tracking-widest uppercase mb-3 animate-pulse">
+      <h2 id="splashTitle" class="relative z-10 text-fuchsia-400 font-mono text-2xl sm:text-4xl font-bold tracking-widest uppercase mb-3 animate-pulse">
         Account #76 Active
       </h2>
-      <p class="relative z-10 text-cyan-400 font-mono text-xs sm:text-sm tracking-widest">
+      <p id="splashSubtitle" class="relative z-10 text-cyan-400 font-mono text-xs sm:text-sm tracking-widest">
         [ LEVEL 999 / AETHER EDITING ONLINE ]
       </p>
     </div>
@@ -859,50 +866,75 @@
       });
 
       // =========================================
-      // AETHER EDITING (GODMODE PLAYER EXPLOSION)
+      // AETHER EDITING / KONAMI CODE LOGIC
       // =========================================
       let typedPunklorde = '';
       const punklordeCode = 'punklorde';
+
+      let konamiBuffer = [];
+      const konamiSequence = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'b', 'a'];
       
       document.addEventListener('keydown', (e) => {
+        // --- PUNKLORDE LISTENER ---
         typedPunklorde += e.key.toLowerCase();
         if (typedPunklorde.length > punklordeCode.length) { typedPunklorde = typedPunklorde.slice(-punklordeCode.length); }
         if (typedPunklorde === punklordeCode) {
           if (document.body.classList.contains('aether-editing')) {
-            // Turning off
             document.body.classList.remove('aether-editing'); 
             showToast('Reality Rebooted. Aether Editing Offline.');
             document.getElementById('rebootRealityBtn').classList.add('hidden'); 
             document.getElementById('rebootRealityBtn').classList.remove('flex');
           } else {
-            // Turning on
             document.body.classList.add('aether-editing'); 
             
-            // Show Level 999 Splash Screen
+            // Set text for standard Account #76
+            document.getElementById('splashTitle').textContent = "Account #76 Active";
+            document.getElementById('splashSubtitle').textContent = "[ LEVEL 999 / AETHER EDITING ONLINE ]";
+            
             const splash = document.getElementById('punklordeSplash');
             splash.classList.remove('hidden');
             splash.classList.add('flex');
             
-            // Allow display:flex to apply before transition
-            setTimeout(() => { 
-              splash.classList.remove('opacity-0'); 
-              splash.classList.add('opacity-100'); 
-            }, 10);
+            setTimeout(() => { splash.classList.remove('opacity-0'); splash.classList.add('opacity-100'); }, 10);
             
-            // Hide splash after 2 seconds
             setTimeout(() => {
               splash.classList.remove('opacity-100');
               splash.classList.add('opacity-0');
-              setTimeout(() => {
-                splash.classList.add('hidden');
-                splash.classList.remove('flex');
-              }, 300);
+              setTimeout(() => { splash.classList.add('hidden'); splash.classList.remove('flex'); }, 300);
             }, 2000);
 
             document.getElementById('rebootRealityBtn').classList.remove('hidden'); 
             document.getElementById('rebootRealityBtn').classList.add('flex');
           }
           typedPunklorde = ''; 
+        }
+
+        // --- KONAMI CODE LISTENER ---
+        konamiBuffer.push(e.key);
+        if (konamiBuffer.length > konamiSequence.length) { konamiBuffer.shift(); }
+        
+        if (konamiBuffer.join(',') === konamiSequence.join(',')) {
+          // Trigger Account #77 and Overclock mode
+          document.body.classList.add('overclocked-77');
+          
+          document.getElementById('splashTitle').textContent = "Account #77 Active";
+          document.getElementById('splashSubtitle').textContent = "[ ACCOUNT #76 DELETED BY: HERTA ]";
+          
+          const splash = document.getElementById('punklordeSplash');
+          splash.classList.remove('hidden');
+          splash.classList.add('flex');
+          
+          setTimeout(() => { splash.classList.remove('opacity-0'); splash.classList.add('opacity-100'); }, 10);
+          
+          setTimeout(() => {
+            splash.classList.remove('opacity-100');
+            splash.classList.add('opacity-0');
+            setTimeout(() => { splash.classList.add('hidden'); splash.classList.remove('flex'); }, 300);
+          }, 3500);
+
+          showToast('System Overclocked: UI speeds doubled.');
+          
+          konamiBuffer = []; // reset buffer
         }
       });
 
