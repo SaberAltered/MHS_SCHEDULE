@@ -1559,9 +1559,45 @@
       let coinParticles = [];
       let coinAnimId = null;
       let swAudio = null;
+
+      // Pre-render circular coin sprite once for smooth 60fps rain
+      const coinSprite = document.createElement('canvas');
+      coinSprite.width = 64;
+      coinSprite.height = 64;
+      const spriteCtx = coinSprite.getContext('2d');
+
+      function drawFallbackSprite() {
+        spriteCtx.clearRect(0, 0, 64, 64);
+        spriteCtx.save();
+        spriteCtx.beginPath();
+        spriteCtx.arc(32, 32, 30, 0, Math.PI * 2);
+        spriteCtx.closePath();
+        spriteCtx.clip();
+        const grad = spriteCtx.createLinearGradient(0, 0, 64, 64);
+        grad.addColorStop(0, '#a855f7');
+        grad.addColorStop(1, '#22d3ee');
+        spriteCtx.fillStyle = grad;
+        spriteCtx.fillRect(0, 0, 64, 64);
+        spriteCtx.fillStyle = '#0f172a';
+        spriteCtx.font = 'bold 24px Inter, sans-serif';
+        spriteCtx.textAlign = 'center';
+        spriteCtx.textBaseline = 'middle';
+        spriteCtx.fillText('SW', 32, 33);
+        spriteCtx.restore();
+      }
+      drawFallbackSprite();
+
       const swCoinImg = new Image();
-      let swCoinImgLoaded = false;
-      swCoinImg.onload = () => { swCoinImgLoaded = true; };
+      swCoinImg.onload = () => {
+        spriteCtx.clearRect(0, 0, 64, 64);
+        spriteCtx.save();
+        spriteCtx.beginPath();
+        spriteCtx.arc(32, 32, 31, 0, Math.PI * 2);
+        spriteCtx.closePath();
+        spriteCtx.clip();
+        spriteCtx.drawImage(swCoinImg, 0, 0, 64, 64);
+        spriteCtx.restore();
+      };
       swCoinImg.src = SCHEDULE_CONFIG.iconPath;
 
       function resizeCoinCanvas() {
@@ -1572,46 +1608,47 @@
       resizeCoinCanvas();
 
       let coinSpawnUntil = 0;
+      let coinBudget = 0;
 
       function spawnCoinBatch(batchSize) {
-        for (let i = 0; i < batchSize; i++) {
-          const size = 24 + Math.random() * 26;
+        const count = Math.min(batchSize, coinBudget);
+        coinBudget -= count;
+        for (let i = 0; i < count; i++) {
+          const size = 26 + Math.random() * 20;
           coinParticles.push({
             x: Math.random() * coinCanvas.width,
-            y: -size - Math.random() * 120,
-            vx: (Math.random() - 0.5) * 3.2,
-            vy: 3.5 + Math.random() * 6.0,
+            y: -size - Math.random() * 90,
+            vx: (Math.random() - 0.5) * 2.2,
+            vy: 6.5 + Math.random() * 5.5,
             size,
             angle: Math.random() * Math.PI * 2,
             spin: (Math.random() - 0.5) * 0.14,
-            wobble: Math.random() * Math.PI * 2,
-            wobbleSpeed: 0.04 + Math.random() * 0.05,
             alpha: 1,
           });
         }
       }
 
       function launchCoinRain() {
-        spawnCoinBatch(120);
-        coinSpawnUntil = performance.now() + 2300;
+        coinBudget = Math.min(coinBudget + 150, 220);
+        spawnCoinBatch(25);
+        coinSpawnUntil = performance.now() + 2000;
         if (!coinAnimId) animateCoinRain();
       }
 
       function animateCoinRain() {
-        if (performance.now() < coinSpawnUntil) {
-          spawnCoinBatch(14);
+        if (performance.now() < coinSpawnUntil && coinBudget > 0) {
+          spawnCoinBatch(2);
         }
         coinCtx.clearRect(0, 0, coinCanvas.width, coinCanvas.height);
         coinParticles = coinParticles.filter((p) => p.alpha > 0.02 && p.y < coinCanvas.height + p.size);
 
         for (const p of coinParticles) {
-          p.wobble += p.wobbleSpeed;
-          p.x += p.vx + Math.sin(p.wobble) * 1.1;
+          p.x += p.vx;
           p.y += p.vy;
-          p.vy = Math.min(p.vy + 0.11, 8.5);
+          p.vy = Math.min(p.vy + 0.16, 12.5);
           p.angle += p.spin;
-          if (p.y > coinCanvas.height * 0.78) {
-            p.alpha -= 0.025;
+          if (p.y > coinCanvas.height * 0.8) {
+            p.alpha -= 0.035;
           }
 
           coinCtx.save();
@@ -1619,30 +1656,11 @@
           coinCtx.translate(p.x, p.y);
           coinCtx.rotate(p.angle);
           const r = p.size / 2;
-
-          coinCtx.beginPath();
-          coinCtx.arc(0, 0, r, 0, Math.PI * 2);
-          coinCtx.closePath();
-          coinCtx.clip();
-
-          if (swCoinImgLoaded) {
-            coinCtx.drawImage(swCoinImg, -r, -r, p.size, p.size);
-          } else {
-            const grad = coinCtx.createLinearGradient(-r, -r, r, r);
-            grad.addColorStop(0, '#a855f7');
-            grad.addColorStop(1, '#22d3ee');
-            coinCtx.fillStyle = grad;
-            coinCtx.fillRect(-r, -r, p.size, p.size);
-            coinCtx.fillStyle = '#0f172a';
-            coinCtx.font = `bold ${Math.round(r * 0.85)}px Inter, sans-serif`;
-            coinCtx.textAlign = 'center';
-            coinCtx.textBaseline = 'middle';
-            coinCtx.fillText('SW', 0, 1);
-          }
+          coinCtx.drawImage(coinSprite, -r, -r, p.size, p.size);
           coinCtx.restore();
         }
 
-        if (coinParticles.length > 0) {
+        if (coinParticles.length > 0 || (performance.now() < coinSpawnUntil && coinBudget > 0)) {
           coinAnimId = requestAnimationFrame(animateCoinRain);
         } else {
           coinAnimId = null;
