@@ -15,6 +15,7 @@
         extend: {
           fontFamily: {
             sans: ['Inter', 'system-ui', 'sans-serif'],
+            mono: ['ui-monospace', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', 'monospace'],
           },
         },
       },
@@ -143,7 +144,6 @@
       box-shadow: inset 0 0 15px rgba(192, 38, 211, 0.4);
     }
     
-    /* Target snap-shrinks to the center of the explosion */
     .aether-glitch-out {
       animation: targetImplode 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
       pointer-events: none !important;
@@ -155,7 +155,6 @@
       100% { transform: scale(0); filter: brightness(5); opacity: 0; }
     }
 
-    /* Godmode Explosion Particles */
     .godmode-core {
       position: fixed;
       border-radius: 50%;
@@ -181,6 +180,10 @@
       box-shadow: 0 0 10px #ea580c;
       pointer-events: none;
       z-index: 9999;
+    }
+
+    .sw-text-glitch {
+      text-shadow: 3px 0px #06b6d4, -3px 0px #c026d3;
     }
   </style>
 </head>
@@ -429,6 +432,19 @@
     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
     Reboot Reality
   </button>
+
+  <!-- Level 999 Activation Splash Screen -->
+  <div id="punklordeSplash" class="fixed inset-0 z-[9999] hidden items-center justify-center bg-slate-950/80 backdrop-blur-sm transition-all duration-300 opacity-0 pointer-events-none">
+    <div class="relative border border-fuchsia-500/50 bg-slate-900/90 p-8 rounded-xl shadow-[0_0_30px_rgba(192,38,211,0.3)] text-center overflow-hidden w-[90%] max-w-lg">
+      <div class="absolute inset-0 pointer-events-none bg-[linear-gradient(transparent_50%,rgba(192,38,211,0.1)_50%)] bg-[length:100%_4px]"></div>
+      <h2 class="relative z-10 text-fuchsia-400 font-mono text-2xl sm:text-4xl font-bold tracking-widest uppercase mb-3 sw-text-glitch animate-pulse">
+        Account #76 Active
+      </h2>
+      <p class="relative z-10 text-cyan-400 font-mono text-xs sm:text-sm tracking-widest">
+        [ LEVEL 999 / AETHER EDITING ONLINE ]
+      </p>
+    </div>
+  </div>
 
   <script>
     const SCHEDULE_CONFIG = {
@@ -857,19 +873,44 @@
         if (typedPunklorde.length > punklordeCode.length) { typedPunklorde = typedPunklorde.slice(-punklordeCode.length); }
         if (typedPunklorde === punklordeCode) {
           if (document.body.classList.contains('aether-editing')) {
-            document.body.classList.remove('aether-editing'); showToast('Aether Editing Mode: OFF.');
-            document.getElementById('rebootRealityBtn').classList.add('hidden'); document.getElementById('rebootRealityBtn').classList.remove('flex');
+            // Turning off
+            document.body.classList.remove('aether-editing'); 
+            showToast('Reality Rebooted. Aether Editing Offline.');
+            document.getElementById('rebootRealityBtn').classList.add('hidden'); 
+            document.getElementById('rebootRealityBtn').classList.remove('flex');
           } else {
-            document.body.classList.add('aether-editing'); showToast('Aether Editing Mode: ON. Select a target.');
-            document.getElementById('rebootRealityBtn').classList.remove('hidden'); document.getElementById('rebootRealityBtn').classList.add('flex');
+            // Turning on
+            document.body.classList.add('aether-editing'); 
+            
+            // Show Level 999 Splash Screen
+            const splash = document.getElementById('punklordeSplash');
+            splash.classList.remove('hidden');
+            splash.classList.add('flex');
+            
+            // Allow display:flex to apply before transition
+            setTimeout(() => { 
+              splash.classList.remove('opacity-0'); 
+              splash.classList.add('opacity-100'); 
+            }, 10);
+            
+            // Hide splash after 2 seconds
+            setTimeout(() => {
+              splash.classList.remove('opacity-100');
+              splash.classList.add('opacity-0');
+              setTimeout(() => {
+                splash.classList.add('hidden');
+                splash.classList.remove('flex');
+              }, 300);
+            }, 2000);
+
+            document.getElementById('rebootRealityBtn').classList.remove('hidden'); 
+            document.getElementById('rebootRealityBtn').classList.add('flex');
           }
           typedPunklorde = ''; 
         }
       });
 
-      // Godmode Explosion Function
       function triggerGodmodeExplosion(x, y) {
-        // Fireball Core
         const core = document.createElement('div');
         core.className = 'godmode-core';
         core.style.left = x + 'px';
@@ -884,7 +925,6 @@
           { transform: 'translate(-50%, -50%) scale(1.3)', opacity: 0 }
         ], { duration: 400, easing: 'ease-out', fill: 'forwards' });
 
-        // Quantum Shards
         for(let i=0; i<8; i++) {
             const shard = document.createElement('div');
             shard.className = 'godmode-shard';
@@ -904,7 +944,6 @@
             setTimeout(() => shard.remove(), 550);
         }
 
-        // Plasma Pixels
         for(let i=0; i<15; i++) {
             const px = document.createElement('div');
             px.className = 'godmode-pixel';
@@ -930,7 +969,6 @@
         setTimeout(() => core.remove(), 450);
       }
 
-      // Deletion Interceptor
       document.addEventListener('click', (e) => {
         if (!document.body.classList.contains('aether-editing')) return;
         if (e.target.closest('#rebootRealityBtn') || e.target.closest('#toast')) return;
@@ -938,23 +976,18 @@
         e.preventDefault(); e.stopPropagation();
         const target = e.target;
         
-        // Find exact center of clicked element for explosion
         const rect = target.getBoundingClientRect();
         const x = rect.left + rect.width / 2;
         const y = rect.top + rect.height / 2;
         
-        // Hide element & Trigger Explosion
         target.classList.add('aether-glitch-out');
         triggerGodmodeExplosion(x, y);
         
-        // Remove from DOM after explosion finishes
         setTimeout(() => { target.remove(); }, 250); 
       }, true); 
 
-      // Reboot Page
       document.getElementById('rebootRealityBtn').addEventListener('click', () => { location.reload(); });
 
-      // Init
       renderAll(); updateVaultUI(); pullFromGitHub(true);
     })();
   </script>
