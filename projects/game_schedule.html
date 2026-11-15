@@ -1571,27 +1571,36 @@
       window.addEventListener('resize', resizeCoinCanvas);
       resizeCoinCanvas();
 
-      function launchCoinRain() {
-        const count = 42;
-        for (let i = 0; i < count; i++) {
-          const size = 28 + Math.random() * 26;
+      let coinSpawnUntil = 0;
+
+      function spawnCoinBatch(batchSize) {
+        for (let i = 0; i < batchSize; i++) {
+          const size = 24 + Math.random() * 26;
           coinParticles.push({
             x: Math.random() * coinCanvas.width,
-            y: -size - Math.random() * (coinCanvas.height * 0.45),
-            vx: (Math.random() - 0.5) * 2.6,
-            vy: 2.5 + Math.random() * 4.5,
+            y: -size - Math.random() * 120,
+            vx: (Math.random() - 0.5) * 3.2,
+            vy: 3.5 + Math.random() * 6.0,
             size,
             angle: Math.random() * Math.PI * 2,
-            spin: (Math.random() - 0.5) * 0.12,
+            spin: (Math.random() - 0.5) * 0.14,
             wobble: Math.random() * Math.PI * 2,
             wobbleSpeed: 0.04 + Math.random() * 0.05,
             alpha: 1,
           });
         }
+      }
+
+      function launchCoinRain() {
+        spawnCoinBatch(120);
+        coinSpawnUntil = performance.now() + 2300;
         if (!coinAnimId) animateCoinRain();
       }
 
       function animateCoinRain() {
+        if (performance.now() < coinSpawnUntil) {
+          spawnCoinBatch(14);
+        }
         coinCtx.clearRect(0, 0, coinCanvas.width, coinCanvas.height);
         coinParticles = coinParticles.filter((p) => p.alpha > 0.02 && p.y < coinCanvas.height + p.size);
 
@@ -1644,6 +1653,9 @@
         try {
           if (!swAudio) {
             swAudio = new Audio(SCHEDULE_CONFIG.audioPath);
+          }
+          if (!swAudio.paused && !swAudio.ended && swAudio.currentTime > 0) {
+            return;
           }
           swAudio.currentTime = 0;
           swAudio.play().catch(() => {});
