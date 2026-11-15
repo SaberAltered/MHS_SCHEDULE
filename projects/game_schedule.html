@@ -21,23 +21,25 @@
     };
   </script>
   <style>
-    html {
-      background-color: #0b0f17;
-    }
     body {
       font-family: 'Inter', system-ui, sans-serif;
-      background-color: transparent;
+      background-color: #0b0f17;
       color: #e2e8f0;
     }
     .site-bg {
       position: fixed;
       inset: 0;
-      z-index: -1;
+      z-index: 0;
       pointer-events: none;
+      overflow: hidden;
       background-color: #0b0f17;
-      background-size: cover;
-      background-position: 45% 18%;
-      background-repeat: no-repeat;
+    }
+    .site-bg img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: 45% 18%;
+      opacity: 0.92;
     }
     .site-bg::after {
       content: "";
@@ -46,15 +48,15 @@
       background:
         linear-gradient(
           to bottom,
-          rgba(7, 10, 18, 0.35) 0%,
-          rgba(7, 10, 18, 0.52) 45%,
+          rgba(7, 10, 18, 0.30) 0%,
+          rgba(7, 10, 18, 0.48) 45%,
           rgba(7, 10, 18, 0.78) 100%
         ),
-        radial-gradient(circle at 45% 25%, transparent 25%, rgba(7, 10, 18, 0.65) 100%);
+        radial-gradient(circle at 45% 25%, transparent 25%, rgba(7, 10, 18, 0.60) 100%);
     }
     @media (max-width: 640px) {
-      .site-bg {
-        background-position: 38% 15%;
+      .site-bg img {
+        object-position: 38% 15%;
       }
     }
     ::-webkit-scrollbar {
@@ -74,7 +76,7 @@
   </style>
 </head>
 <body class="min-h-screen flex flex-col antialiased selection:bg-cyan-500/30 selection:text-cyan-200">
-  <div id="siteBg" class="site-bg"></div>
+  <div id="siteBg" class="site-bg"><img id="siteBgImg" src="../art/GameBg.webp" alt="" onerror="this.style.display='none'" /></div>
 
   <!-- Top Navigation / Header -->
   <header class="sticky top-0 z-30 border-b border-slate-800/70 bg-[#0b0f17]/75 backdrop-blur-md">
@@ -108,7 +110,7 @@
   </header>
 
   <!-- Main Workspace -->
-  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-5 space-y-5">
+  <main class="relative z-10 flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-5 space-y-5">
 
     <!-- Controls Bar: Week Nav + View Toggle + Stats -->
     <section class="flex flex-col md:flex-row md:items-center justify-between gap-3 bg-slate-950/65 backdrop-blur-md border border-slate-800/80 rounded-2xl p-3.5">
@@ -210,6 +212,11 @@
           <label for="sessionNotesInput" class="block text-xs font-medium text-slate-300 mb-1.5">Notes / Goal (optional)</label>
           <input type="text" id="sessionNotesInput" placeholder="e.g., Island raids, weekly boss, ranked duo..." class="w-full rounded-xl bg-slate-950 border border-slate-700 px-3 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500" />
         </div>
+
+        <label class="flex items-center gap-2.5 cursor-pointer select-none">
+          <input type="checkbox" id="sessionRepeatInput" class="w-4 h-4 rounded border-slate-600 bg-slate-950 text-cyan-500 focus:ring-cyan-500" />
+          <span class="text-xs text-slate-300">Repeat every week on this day</span>
+        </label>
 
         <div class="pt-2 flex items-center justify-between gap-3">
           <button type="button" id="deleteSessionBtn" class="hidden px-3.5 py-2.5 rounded-xl bg-rose-500/15 hover:bg-rose-500/25 text-rose-400 text-sm font-medium transition-colors">
@@ -429,12 +436,12 @@
       ],
       // dayOffset: 0 = Sun, 1 = Mon, 2 = Tue, 3 = Wed, 4 = Thu, 5 = Fri, 6 = Sat
       weeklyTemplate: [
-        { id: 's-sun', dayOffset: 0, gameId: 'g-lone-echo', startTime: '19:30', endTime: '21:30', notes: '', status: 'planned' },
-        { id: 's-mon', dayOffset: 1, gameId: 'g-lone-echo', startTime: '19:30', endTime: '21:30', notes: '', status: 'planned' },
-        { id: 's-tue', dayOffset: 2, gameId: 'g-tabor',     startTime: '19:30', endTime: '21:30', notes: '', status: 'planned' },
-        { id: 's-wed', dayOffset: 3, gameId: 'g-tabor',     startTime: '19:30', endTime: '21:30', notes: '', status: 'planned' },
-        { id: 's-thu', dayOffset: 4, gameId: 'g-007',       startTime: '19:30', endTime: '21:30', notes: '', status: 'planned' },
-        { id: 's-fri', dayOffset: 5, gameId: 'g-hsr',       startTime: '19:30', endTime: '21:30', notes: '', status: 'planned' },
+        { id: 's-sun', dayOffset: 0, gameId: 'g-lone-echo', startTime: '19:30', endTime: '21:30', notes: '', status: 'planned', repeatWeekly: true },
+        { id: 's-mon', dayOffset: 1, gameId: 'g-lone-echo', startTime: '19:30', endTime: '21:30', notes: '', status: 'planned', repeatWeekly: true },
+        { id: 's-tue', dayOffset: 2, gameId: 'g-tabor',     startTime: '19:30', endTime: '21:30', notes: '', status: 'planned', repeatWeekly: true },
+        { id: 's-wed', dayOffset: 3, gameId: 'g-tabor',     startTime: '19:30', endTime: '21:30', notes: '', status: 'planned', repeatWeekly: true },
+        { id: 's-thu', dayOffset: 4, gameId: 'g-007',       startTime: '19:30', endTime: '21:30', notes: '', status: 'planned', repeatWeekly: true },
+        { id: 's-fri', dayOffset: 5, gameId: 'g-hsr',       startTime: '19:30', endTime: '21:30', notes: '', status: 'planned', repeatWeekly: true },
       ],
     };
 
@@ -470,6 +477,20 @@
         return d;
       }
 
+      function getDayOfWeekFromISO(iso) {
+        return new Date(iso + 'T00:00:00').getDay();
+      }
+
+      function getSessionsForDate(iso, list) {
+        const dow = getDayOfWeekFromISO(iso);
+        return (list || state.sessions).filter((sess) => {
+          if (sess.repeatWeekly) {
+            return getDayOfWeekFromISO(sess.date) === dow;
+          }
+          return sess.date === iso;
+        });
+      }
+
       function buildDefaultState() {
         const today = new Date();
         const sunday = getSundayOfWeek(today);
@@ -483,6 +504,7 @@
             endTime: item.endTime,
             notes: item.notes || '',
             status: item.status || 'planned',
+            repeatWeekly: item.repeatWeekly !== false,
           })),
         };
       }
@@ -786,9 +808,11 @@
         const endStr = end.toLocaleDateString('en-US', { ...opts, year: 'numeric' });
         document.getElementById('weekRangeLabel').textContent = `${startStr} – ${endStr}`;
 
-        const weekDates = new Set();
-        for (let i = 0; i < 7; i++) weekDates.add(toISODate(addDays(currentWeekStart, i)));
-        const weekSessions = state.sessions.filter((s) => weekDates.has(s.date));
+        const weekSessions = [];
+        for (let i = 0; i < 7; i++) {
+          const iso = toISODate(addDays(currentWeekStart, i));
+          weekSessions.push(...getSessionsForDate(iso));
+        }
         const confirmed = weekSessions.filter((s) => s.status === 'confirmed').length;
         const done = weekSessions.filter((s) => s.status === 'done').length;
 
@@ -858,7 +882,7 @@
             const isToday = iso === todayISO;
             const dayName = d.toLocaleDateString('en-US', { weekday: 'short' });
             const dayNum = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-            const daySessions = filteredSessions.filter((s) => s.date === iso);
+            const daySessions = getSessionsForDate(iso, filteredSessions);
 
             gridHtml += `
               <div class="flex flex-col rounded-2xl border ${
@@ -889,10 +913,12 @@
           container.innerHTML = gridHtml;
         } else {
           // Agenda list view for the current week
-          const weekDates = [];
-          for (let i = 0; i < 7; i++) weekDates.push(toISODate(addDays(currentWeekStart, i)));
-          const weekSet = new Set(weekDates);
-          const weekSessions = filteredSessions.filter((s) => weekSet.has(s.date));
+          const weekSessions = [];
+          for (let i = 0; i < 7; i++) {
+            const iso = toISODate(addDays(currentWeekStart, i));
+            const dayMatches = getSessionsForDate(iso, filteredSessions).map((sess) => ({ ...sess, _displayDate: iso }));
+            weekSessions.push(...dayMatches);
+          }
 
           if (weekSessions.length === 0) {
             container.innerHTML = `
@@ -912,7 +938,7 @@
           for (const s of weekSessions) {
             const g = getGameById(s.gameId);
             const p = getPalette(g.color);
-            const dObj = new Date(s.date + 'T00:00:00');
+            const dObj = new Date((s._displayDate || s.date) + 'T00:00:00');
             const dateLabel = dObj.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
             listHtml += `
               <div data-edit-session="${escapeHtml(s.id)}" class="cursor-pointer rounded-2xl border ${p.border} bg-slate-900/80 hover:bg-slate-800/80 p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 transition-colors">
@@ -954,8 +980,9 @@
                 ${statusBadge(s.status)}
               </button>
             </div>
-            <div class="text-[11px] text-slate-300 font-medium">
-              ${formatTime12h(s.startTime)} – ${formatTime12h(s.endTime)}
+            <div class="text-[11px] text-slate-300 font-medium flex items-center justify-between gap-1">
+              <span>${formatTime12h(s.startTime)} – ${formatTime12h(s.endTime)}</span>
+              ${s.repeatWeekly ? '<span class="text-[10px] text-cyan-300/80" title="Repeats weekly">↻ Weekly</span>' : ''}
             </div>
             ${s.notes ? `<div class="text-[11px] text-slate-400 line-clamp-2">${escapeHtml(s.notes)}</div>` : ''}
           </div>
@@ -982,6 +1009,7 @@
           document.getElementById('sessionEndInput').value = s.endTime;
           document.getElementById('sessionNotesInput').value = s.notes || '';
           document.getElementById('sessionStatusSelect').value = s.status || 'planned';
+          document.getElementById('sessionRepeatInput').checked = !!s.repeatWeekly;
           delBtn.classList.remove('hidden');
         } else {
           document.getElementById('sessionModalTitle').textContent = 'Plan Game Session';
@@ -992,6 +1020,7 @@
           document.getElementById('sessionEndInput').value = '21:30';
           document.getElementById('sessionNotesInput').value = '';
           document.getElementById('sessionStatusSelect').value = 'planned';
+          document.getElementById('sessionRepeatInput').checked = false;
           delBtn.classList.add('hidden');
         }
 
@@ -1071,11 +1100,12 @@
       });
 
       document.getElementById('fillWeekBtn').addEventListener('click', () => {
-        let added = 0;
+        let changed = 0;
         for (const item of SCHEDULE_CONFIG.weeklyTemplate) {
           const d = toISODate(addDays(currentWeekStart, item.dayOffset));
-          const exists = state.sessions.some((sess) => sess.date === d && sess.gameId === item.gameId);
-          if (!exists) {
+          const dow = getDayOfWeekFromISO(d);
+          const existing = state.sessions.find((sess) => (sess.repeatWeekly ? getDayOfWeekFromISO(sess.date) === dow : sess.date === d) && sess.gameId === item.gameId);
+          if (!existing) {
             state.sessions.push({
               id: 's-' + d + '-' + item.gameId + '-' + Math.random().toString(36).slice(2, 6),
               date: d,
@@ -1084,16 +1114,20 @@
               endTime: item.endTime,
               notes: item.notes || '',
               status: item.status || 'planned',
+              repeatWeekly: true,
             });
-            added++;
+            changed++;
+          } else if (!existing.repeatWeekly) {
+            existing.repeatWeekly = true;
+            changed++;
           }
         }
-        if (added > 0) {
+        if (changed > 0) {
           saveState();
           renderAll();
-          showToast(`Added ${added} default session${added === 1 ? '' : 's'} to this week`);
+          showToast('Weekly repeating lineup enabled!');
         } else {
-          showToast('This week already has your default games.');
+          showToast('Weekly repeating lineup is already active.');
         }
       });
 
@@ -1154,6 +1188,7 @@
         const endTime = document.getElementById('sessionEndInput').value;
         const notes = document.getElementById('sessionNotesInput').value.trim();
         const status = document.getElementById('sessionStatusSelect').value;
+        const repeatWeekly = document.getElementById('sessionRepeatInput').checked;
 
         if (!gameId || !date) return;
 
@@ -1166,6 +1201,7 @@
             existing.endTime = endTime;
             existing.notes = notes;
             existing.status = status;
+            existing.repeatWeekly = repeatWeekly;
           }
           showToast('Session updated');
         } else {
@@ -1177,6 +1213,7 @@
             endTime,
             notes,
             status,
+            repeatWeekly,
           });
           showToast('Session added');
         }
@@ -1468,7 +1505,7 @@
       document.getElementById('pageTitleHeading').textContent = SCHEDULE_CONFIG.title;
       document.getElementById('headerIconImg').src = SCHEDULE_CONFIG.iconPath;
       if (SCHEDULE_CONFIG.backgroundPath) {
-        document.getElementById('siteBg').style.backgroundImage = `url('${SCHEDULE_CONFIG.backgroundPath}')`;
+        document.getElementById('siteBgImg').src = SCHEDULE_CONFIG.backgroundPath;
       }
 
       // Initial render & background pull from games.json
