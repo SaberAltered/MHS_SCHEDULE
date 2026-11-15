@@ -1,0 +1,1276 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Hunters Game Schedule</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+          },
+        },
+      },
+    };
+  </script>
+  <style>
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background-color: #0b0f17;
+      color: #e2e8f0;
+    }
+    .site-bg {
+      position: fixed;
+      inset: 0;
+      z-index: -2;
+      pointer-events: none;
+      background-color: #0b0f17;
+      background-size: cover;
+      background-position: 45% 18%;
+      background-repeat: no-repeat;
+    }
+    .site-bg::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(
+          to bottom,
+          rgba(7, 10, 18, 0.35) 0%,
+          rgba(7, 10, 18, 0.52) 45%,
+          rgba(7, 10, 18, 0.78) 100%
+        ),
+        radial-gradient(circle at 45% 25%, transparent 25%, rgba(7, 10, 18, 0.65) 100%);
+    }
+    @media (max-width: 640px) {
+      .site-bg {
+        background-position: 38% 15%;
+      }
+    }
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #111827;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #334155;
+      border-radius: 3px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #475569;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col antialiased selection:bg-cyan-500/30 selection:text-cyan-200">
+  <div id="siteBg" class="site-bg"></div>
+
+  <!-- Top Navigation / Header -->
+  <header class="sticky top-0 z-30 border-b border-slate-800/70 bg-[#0b0f17]/75 backdrop-blur-md">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex flex-wrap items-center justify-between gap-3">
+      <div class="flex items-center gap-3 min-w-0">
+        <img id="headerIconImg" src="art/SilverWolf.webp" alt="Silver Wolf icon" class="w-10 h-10 rounded-full object-cover shrink-0" onerror="this.style.display='none'" />
+        <div class="min-w-0">
+          <h1 id="pageTitleHeading" class="text-base sm:text-lg font-bold tracking-tight text-white truncate">Hunters Game Schedule</h1>
+        </div>
+      </div>
+
+      <!-- Primary Actions -->
+      <div class="flex items-center gap-2 flex-wrap">
+        <button id="settingsBtn" class="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs sm:text-sm font-medium text-slate-200 transition-colors" title="Settings (Games, GitHub Sync, Backup)">
+          <svg class="w-4 h-4 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+          </svg>
+          <span id="syncStatusDot" class="w-2 h-2 rounded-full bg-slate-500"></span>
+          <span class="hidden sm:inline">Settings</span>
+        </button>
+
+        <button id="openAddSessionBtn" class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-cyan-500 hover:bg-cyan-400 text-slate-950 text-xs sm:text-sm font-semibold shadow-md shadow-cyan-500/20 transition-colors">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+          </svg>
+          <span>Plan Session</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Workspace -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-5 space-y-5">
+
+    <!-- Controls Bar: Week Nav + View Toggle + Stats -->
+    <section class="flex flex-col md:flex-row md:items-center justify-between gap-3 bg-slate-950/65 backdrop-blur-md border border-slate-800/80 rounded-2xl p-3.5">
+      <div class="flex items-center gap-2 flex-wrap">
+        <div class="inline-flex rounded-lg bg-slate-950 p-1 border border-slate-800">
+          <button id="prevWeekBtn" class="p-1.5 rounded-md text-slate-400 hover:text-white hover:bg-slate-800 transition-colors" aria-label="Previous week">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+            </svg>
+          </button>
+          <button id="todayBtn" class="px-2.5 py-1 rounded-md text-xs font-medium text-slate-300 hover:text-white hover:bg-slate-800 transition-colors">
+            This Week
+          </button>
+          <button id="nextWeekBtn" class="p-1.5 rounded-md text-slate-400 hover:text-white hover:bg-slate-800 transition-colors" aria-label="Next week">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+            </svg>
+          </button>
+        </div>
+        <h2 id="weekRangeLabel" class="text-sm sm:text-base font-semibold text-white ml-1"></h2>
+      </div>
+
+      <div class="flex items-center justify-between md:justify-end gap-3 flex-wrap">
+        <!-- Quick stats -->
+        <div id="weekStats" class="flex items-center gap-3 text-xs text-slate-400"></div>
+
+        <!-- View Switcher -->
+        <div class="flex items-center gap-2">
+          <div class="inline-flex rounded-lg bg-slate-950 p-1 border border-slate-800">
+            <button id="viewWeekBtn" class="px-2.5 py-1 rounded-md text-xs font-medium transition-colors">Week</button>
+            <button id="viewListBtn" class="px-2.5 py-1 rounded-md text-xs font-medium transition-colors">Agenda</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Game Filter Pills -->
+    <section class="flex items-center gap-2 overflow-x-auto pb-1" id="gameFilterBar">
+      <!-- Populated by JS -->
+    </section>
+
+    <!-- Calendar / Agenda Container -->
+    <section id="scheduleContainer">
+      <!-- Populated by JS -->
+    </section>
+
+  </main>
+
+  <!-- Add / Edit Session Modal -->
+  <div id="sessionModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+    <div class="w-full max-w-md bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl overflow-hidden">
+      <div class="px-5 py-4 border-b border-slate-800 flex items-center justify-between">
+        <h3 id="sessionModalTitle" class="text-base font-semibold text-white">Plan Game Session</h3>
+        <button id="closeSessionModalBtn" class="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800 transition-colors">
+          <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+      <form id="sessionForm" class="p-5 space-y-4">
+        <input type="hidden" id="sessionIdInput" />
+
+        <div>
+          <label for="sessionGameSelect" class="block text-xs font-medium text-slate-300 mb-1.5">Game</label>
+          <select id="sessionGameSelect" required class="w-full rounded-xl bg-slate-950 border border-slate-700 px-3 py-2.5 text-sm text-white focus:outline-none focus:border-cyan-500">
+          </select>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label for="sessionDateInput" class="block text-xs font-medium text-slate-300 mb-1.5">Date</label>
+            <input type="date" id="sessionDateInput" required class="w-full rounded-xl bg-slate-950 border border-slate-700 px-3 py-2.5 text-sm text-white focus:outline-none focus:border-cyan-500" />
+          </div>
+          <div>
+            <label for="sessionStatusSelect" class="block text-xs font-medium text-slate-300 mb-1.5">Status</label>
+            <select id="sessionStatusSelect" class="w-full rounded-xl bg-slate-950 border border-slate-700 px-3 py-2.5 text-sm text-white focus:outline-none focus:border-cyan-500">
+              <option value="planned">Planned</option>
+              <option value="confirmed">Confirmed</option>
+              <option value="done">Done</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label for="sessionStartInput" class="block text-xs font-medium text-slate-300 mb-1.5">Start Time</label>
+            <input type="time" id="sessionStartInput" required class="w-full rounded-xl bg-slate-950 border border-slate-700 px-3 py-2.5 text-sm text-white focus:outline-none focus:border-cyan-500" />
+          </div>
+          <div>
+            <label for="sessionEndInput" class="block text-xs font-medium text-slate-300 mb-1.5">End Time</label>
+            <input type="time" id="sessionEndInput" required class="w-full rounded-xl bg-slate-950 border border-slate-700 px-3 py-2.5 text-sm text-white focus:outline-none focus:border-cyan-500" />
+          </div>
+        </div>
+
+        <div>
+          <label for="sessionNotesInput" class="block text-xs font-medium text-slate-300 mb-1.5">Notes / Goal (optional)</label>
+          <input type="text" id="sessionNotesInput" placeholder="e.g., Island raids, weekly boss, ranked duo..." class="w-full rounded-xl bg-slate-950 border border-slate-700 px-3 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500" />
+        </div>
+
+        <div class="pt-2 flex items-center justify-between gap-3">
+          <button type="button" id="deleteSessionBtn" class="hidden px-3.5 py-2.5 rounded-xl bg-rose-500/15 hover:bg-rose-500/25 text-rose-400 text-sm font-medium transition-colors">
+            Delete
+          </button>
+          <div class="flex items-center gap-2 ml-auto">
+            <button type="button" id="cancelSessionBtn" class="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-sm font-medium transition-colors">
+              Cancel
+            </button>
+            <button type="submit" class="px-5 py-2.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 text-sm font-semibold transition-colors">
+              Save Session
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Manage Games Modal -->
+  <div id="gamesModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+    <div class="w-full max-w-lg bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[85vh]">
+      <div class="px-5 py-4 border-b border-slate-800 flex items-center justify-between">
+        <h3 class="text-base font-semibold text-white">Your Game Roster</h3>
+        <button id="closeGamesModalBtn" class="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800 transition-colors">
+          <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+      <div class="p-5 space-y-4 overflow-y-auto">
+        <form id="addGameForm" class="bg-slate-950/70 border border-slate-800 rounded-xl p-3.5 space-y-3">
+          <div class="text-xs font-semibold uppercase tracking-wider text-slate-400">Add a Game</div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+            <input type="text" id="newGameNameInput" required placeholder="Game title" class="rounded-lg bg-slate-900 border border-slate-700 px-3 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500" />
+            <input type="text" id="newGamePlatformInput" placeholder="Platform (PC, VR, Crossplay)" class="rounded-lg bg-slate-900 border border-slate-700 px-3 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500" />
+          </div>
+          <div class="flex items-center justify-between gap-3">
+            <div class="flex items-center gap-2" id="colorPickerRow">
+              <!-- Color swatches populated by JS -->
+            </div>
+            <button type="submit" class="px-4 py-2 rounded-lg bg-cyan-500 hover:bg-cyan-400 text-slate-950 text-xs font-semibold transition-colors">
+              Add Game
+            </button>
+          </div>
+        </form>
+
+        <div id="gamesListContainer" class="space-y-2">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Settings Gear Modal -->
+  <div id="settingsModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+    <div class="w-full max-w-md bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl overflow-hidden">
+      <div class="px-5 py-4 border-b border-slate-800 flex items-center justify-between">
+        <h3 class="text-base font-semibold text-white">Settings</h3>
+        <button id="closeSettingsModalBtn" class="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800 transition-colors">
+          <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+      <div class="p-5 space-y-4">
+        <div class="space-y-2">
+          <button id="manageGamesBtn" class="w-full flex items-center justify-between px-4 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-sm font-medium text-white transition-colors">
+            <span class="inline-flex items-center gap-2.5">
+              <svg class="w-4 h-4 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+              </svg>
+              <span>Games Roster</span>
+            </span>
+            <span class="text-xs text-slate-400">Add / Remove</span>
+          </button>
+
+          <button id="githubSyncBtn" class="w-full flex items-center justify-between px-4 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-sm font-medium text-white transition-colors">
+            <span class="inline-flex items-center gap-2.5">
+              <span id="syncModalDot" class="w-2.5 h-2.5 rounded-full bg-slate-500"></span>
+              <span>GitHub Sync (games.json)</span>
+            </span>
+            <span id="syncStatusText" class="text-xs text-slate-400">Configure</span>
+          </button>
+        </div>
+
+        <div class="pt-3 border-t border-slate-800 space-y-2.5">
+          <div class="text-xs font-semibold uppercase tracking-wider text-slate-400">Export / Import</div>
+          <div class="grid grid-cols-2 gap-2.5">
+            <button id="exportJsonBtn" class="px-3.5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-sm font-medium text-white transition-colors">
+              Export JSON
+            </button>
+            <label class="px-3.5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-sm font-medium text-white text-center cursor-pointer transition-colors">
+              Import JSON
+              <input type="file" id="importJsonInput" accept="application/json,.json" class="hidden" />
+            </label>
+          </div>
+        </div>
+
+        <div class="pt-3 border-t border-slate-800 flex items-center justify-between">
+          <span class="text-xs text-slate-400">Restore default schedule?</span>
+          <button id="confirmResetBtn" class="px-3 py-1.5 rounded-lg bg-rose-500/15 hover:bg-rose-500/25 text-rose-400 text-xs font-medium transition-colors">
+            Reset Data
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- GitHub Sync Modal -->
+  <div id="githubModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+    <div class="w-full max-w-md bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl overflow-hidden">
+      <div class="px-5 py-4 border-b border-slate-800 flex items-center justify-between">
+        <h3 class="text-base font-semibold text-white">GitHub Auto-Sync (games.json)</h3>
+        <button id="closeGithubModalBtn" class="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800 transition-colors">
+          <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+      <form id="githubForm" class="p-5 space-y-3.5">
+        <p class="text-xs text-slate-400 leading-relaxed">
+          Everyone loads <code class="text-cyan-300">games.json</code> from your repo. Add a Fine-Grained PAT (scoped only to <strong>Contents: Read &amp; Write</strong> on this repo) to auto-commit changes from your browser. Your token stays only in this browser's localStorage.
+        </p>
+
+        <div class="grid grid-cols-2 gap-2.5">
+          <div>
+            <label for="ghOwnerInput" class="block text-xs font-medium text-slate-300 mb-1">GitHub Owner</label>
+            <input type="text" id="ghOwnerInput" required class="w-full rounded-xl bg-slate-950 border border-slate-700 px-3 py-2 text-sm text-white focus:outline-none focus:border-cyan-500" />
+          </div>
+          <div>
+            <label for="ghRepoInput" class="block text-xs font-medium text-slate-300 mb-1">Repository</label>
+            <input type="text" id="ghRepoInput" required class="w-full rounded-xl bg-slate-950 border border-slate-700 px-3 py-2 text-sm text-white focus:outline-none focus:border-cyan-500" />
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-2.5">
+          <div>
+            <label for="ghBranchInput" class="block text-xs font-medium text-slate-300 mb-1">Branch</label>
+            <input type="text" id="ghBranchInput" required class="w-full rounded-xl bg-slate-950 border border-slate-700 px-3 py-2 text-sm text-white focus:outline-none focus:border-cyan-500" />
+          </div>
+          <div>
+            <label for="ghPathInput" class="block text-xs font-medium text-slate-300 mb-1">File Path</label>
+            <input type="text" id="ghPathInput" required class="w-full rounded-xl bg-slate-950 border border-slate-700 px-3 py-2 text-sm text-white focus:outline-none focus:border-cyan-500" />
+          </div>
+        </div>
+
+        <div>
+          <label for="ghTokenInput" class="block text-xs font-medium text-slate-300 mb-1">Fine-Grained PAT (Admin only)</label>
+          <input type="password" id="ghTokenInput" placeholder="github_pat_..." autocomplete="off" class="w-full rounded-xl bg-slate-950 border border-slate-700 px-3 py-2 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-cyan-500" />
+        </div>
+
+        <label class="flex items-center gap-2.5 cursor-pointer select-none pt-1">
+          <input type="checkbox" id="ghAutoPushInput" class="w-4 h-4 rounded border-slate-600 bg-slate-950 text-cyan-500 focus:ring-cyan-500" />
+          <span class="text-xs text-slate-300">Auto-push to GitHub whenever I add, edit, or delete</span>
+        </label>
+
+        <div id="ghLastSyncInfo" class="text-[11px] text-slate-500"></div>
+
+        <div class="pt-2 flex flex-wrap items-center justify-between gap-2 border-t border-slate-800">
+          <div class="flex items-center gap-2">
+            <button type="button" id="ghPullBtn" class="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-medium text-slate-200 transition-colors">
+              Pull Now
+            </button>
+            <button type="button" id="ghPushBtn" class="px-3 py-2 rounded-xl bg-indigo-500/20 hover:bg-indigo-500/30 border border-indigo-500/40 text-xs font-medium text-indigo-300 transition-colors">
+              Push Now
+            </button>
+          </div>
+          <button type="submit" class="px-4 py-2 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 text-xs font-semibold transition-colors">
+            Save Settings
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div id="toast" class="fixed bottom-5 right-5 z-50 hidden items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-800 border border-slate-700 text-sm text-white shadow-xl transition-all">
+    <span id="toastMessage"></span>
+  </div>
+
+  <script>
+    /* =========================================================
+       EASY CODE CONFIGURATION — Edit your defaults right here!
+       ========================================================= */
+    const SCHEDULE_CONFIG = {
+      title: 'Hunters Game Schedule',
+      iconPath: 'art/SilverWolf.webp',
+      backgroundPath: 'art/GameBg.webp',
+      github: {
+        owner: 'SaberAltered',
+        repo: 'MHS_SCHEDULE',
+        branch: 'main',
+        path: 'games.json',
+      },
+      games: [
+        { id: 'g-lone-echo', name: 'Lone Echo',         platform: 'PCVR',         color: 'cyan' },
+        { id: 'g-tabor',     name: 'Ghosts of Tabor',   platform: 'PCVR / Quest', color: 'amber' },
+        { id: 'g-007',       name: '007 First Light',   platform: 'PC',           color: 'indigo' },
+        { id: 'g-hsr',       name: 'Honkai: Star Rail', platform: 'PC',           color: 'violet' },
+      ],
+      // dayOffset: 0 = Sun, 1 = Mon, 2 = Tue, 3 = Wed, 4 = Thu, 5 = Fri, 6 = Sat
+      weeklyTemplate: [
+        { id: 's-sun', dayOffset: 0, gameId: 'g-lone-echo', startTime: '19:30', endTime: '21:30', notes: '', status: 'planned' },
+        { id: 's-mon', dayOffset: 1, gameId: 'g-lone-echo', startTime: '19:30', endTime: '21:30', notes: '', status: 'planned' },
+        { id: 's-tue', dayOffset: 2, gameId: 'g-tabor',     startTime: '19:30', endTime: '21:30', notes: '', status: 'planned' },
+        { id: 's-wed', dayOffset: 3, gameId: 'g-tabor',     startTime: '19:30', endTime: '21:30', notes: '', status: 'planned' },
+        { id: 's-thu', dayOffset: 4, gameId: 'g-007',       startTime: '19:30', endTime: '21:30', notes: '', status: 'planned' },
+        { id: 's-fri', dayOffset: 5, gameId: 'g-hsr',       startTime: '19:30', endTime: '21:30', notes: '', status: 'planned' },
+      ],
+    };
+
+    (function () {
+      const STORAGE_KEY = 'hunters_game_schedule_v1';
+      const GH_CONFIG_KEY = 'hunters_gh_sync_config_v1';
+
+      const PALETTE = [
+        { id: 'cyan',    bg: 'bg-cyan-500/15',    border: 'border-cyan-500/40',    text: 'text-cyan-300',    dot: 'bg-cyan-400',    swatch: '#06b6d4' },
+        { id: 'indigo',  bg: 'bg-indigo-500/15',  border: 'border-indigo-500/40',  text: 'text-indigo-300',  dot: 'bg-indigo-400',  swatch: '#6366f1' },
+        { id: 'amber',   bg: 'bg-amber-500/15',   border: 'border-amber-500/40',   text: 'text-amber-300',   dot: 'bg-amber-400',   swatch: '#f59e0b' },
+        { id: 'emerald', bg: 'bg-emerald-500/15', border: 'border-emerald-500/40', text: 'text-emerald-300', dot: 'bg-emerald-400', swatch: '#10b981' },
+        { id: 'rose',    bg: 'bg-rose-500/15',    border: 'border-rose-500/40',    text: 'text-rose-300',    dot: 'bg-rose-400',    swatch: '#f43f5e' },
+        { id: 'violet',  bg: 'bg-violet-500/15',  border: 'border-violet-500/40',  text: 'text-violet-300',  dot: 'bg-violet-400',  swatch: '#8b5cf6' },
+      ];
+
+      function toISODate(d) {
+        const y = d.getFullYear();
+        const m = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
+        return `${y}-${m}-${day}`;
+      }
+
+      function getSundayOfWeek(dateObj) {
+        const d = new Date(dateObj.getFullYear(), dateObj.getMonth(), dateObj.getDate());
+        d.setDate(d.getDate() - d.getDay());
+        return d;
+      }
+
+      function addDays(dateObj, days) {
+        const d = new Date(dateObj.getFullYear(), dateObj.getMonth(), dateObj.getDate());
+        d.setDate(d.getDate() + days);
+        return d;
+      }
+
+      function buildDefaultState() {
+        const today = new Date();
+        const sunday = getSundayOfWeek(today);
+        return {
+          games: SCHEDULE_CONFIG.games.map((g) => ({ ...g })),
+          sessions: SCHEDULE_CONFIG.weeklyTemplate.map((item) => ({
+            id: item.id,
+            date: toISODate(addDays(sunday, item.dayOffset)),
+            gameId: item.gameId,
+            startTime: item.startTime,
+            endTime: item.endTime,
+            notes: item.notes || '',
+            status: item.status || 'planned',
+          })),
+        };
+      }
+
+      let state = loadState();
+      let currentWeekStart = getSundayOfWeek(new Date());
+      let viewMode = 'week'; // 'week' | 'list'
+      let selectedGameFilter = 'all';
+      let selectedSwatchColor = PALETTE[0].id;
+      let resetArmed = false;
+
+      function loadState() {
+        try {
+          const raw = localStorage.getItem(STORAGE_KEY);
+          if (raw) {
+            const parsed = JSON.parse(raw);
+            if (parsed && Array.isArray(parsed.games) && Array.isArray(parsed.sessions)) {
+              return {
+                friendName: parsed.friendName || 'Duo Partner',
+                games: parsed.games,
+                sessions: parsed.sessions,
+              };
+            }
+          }
+        } catch (e) {
+          // ignore storage errors
+        }
+        return buildDefaultState();
+      }
+
+      let ghConfig = loadGhConfig();
+      let ghSyncing = false;
+
+      function loadGhConfig() {
+        const defaults = {
+          owner: SCHEDULE_CONFIG.github.owner,
+          repo: SCHEDULE_CONFIG.github.repo,
+          branch: SCHEDULE_CONFIG.github.branch,
+          path: SCHEDULE_CONFIG.github.path,
+          token: '',
+          autoPush: true,
+        };
+        try {
+          const raw = localStorage.getItem(GH_CONFIG_KEY);
+          if (raw) {
+            return { ...defaults, ...JSON.parse(raw) };
+          }
+        } catch (e) {}
+        return defaults;
+      }
+
+      function saveGhConfig() {
+        try {
+          localStorage.setItem(GH_CONFIG_KEY, JSON.stringify(ghConfig));
+        } catch (e) {}
+      }
+
+      function setSyncIndicator(status, label) {
+        const dot = document.getElementById('syncStatusDot');
+        const modalDot = document.getElementById('syncModalDot');
+        const txt = document.getElementById('syncStatusText');
+        const map = {
+          idle: 'bg-slate-500',
+          syncing: 'bg-amber-400 animate-pulse',
+          synced: 'bg-emerald-400',
+          error: 'bg-rose-400',
+        };
+        const cls = map[status] || map.idle;
+        if (dot) dot.className = 'w-2 h-2 rounded-full ' + cls;
+        if (modalDot) modalDot.className = 'w-2.5 h-2.5 rounded-full ' + cls;
+        if (txt) txt.textContent = label || 'Configure';
+      }
+
+      function utf8ToBase64(str) {
+        const bytes = new TextEncoder().encode(str);
+        let bin = '';
+        for (let i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
+        return btoa(bin);
+      }
+
+      async function pullFromGitHub(silent) {
+        const rawUrl = `https://raw.githubusercontent.com/${encodeURIComponent(ghConfig.owner)}/${encodeURIComponent(ghConfig.repo)}/${encodeURIComponent(ghConfig.branch)}/${ghConfig.path}?t=${Date.now()}`;
+        try {
+          setSyncIndicator('syncing', 'Syncing...');
+          const res = await fetch(rawUrl, { cache: 'no-store' });
+          if (!res.ok) {
+            setSyncIndicator('idle', ghConfig.token ? 'Ready' : 'GitHub Sync');
+            if (!silent) showToast(`No ${ghConfig.path} found yet (HTTP ${res.status})`);
+            return false;
+          }
+          const parsed = await res.json();
+          if (parsed && Array.isArray(parsed.games) && Array.isArray(parsed.sessions)) {
+            state = {
+              friendName: parsed.friendName || 'Duo Partner',
+              games: parsed.games,
+              sessions: parsed.sessions,
+            };
+            try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (e) {}
+            renderAll();
+            setSyncIndicator('synced', 'Synced');
+            if (!silent) showToast('Pulled latest games.json');
+            return true;
+          }
+        } catch (e) {
+          setSyncIndicator('error', 'Sync Error');
+          if (!silent) showToast('Could not fetch from GitHub');
+        }
+        return false;
+      }
+
+      async function pushToGitHub(silent) {
+        if (!ghConfig.token) {
+          if (!silent) showToast('Add your GitHub token in GitHub Sync first.');
+          return false;
+        }
+        if (ghSyncing) return false;
+        ghSyncing = true;
+        setSyncIndicator('syncing', 'Pushing...');
+        const apiUrl = `https://api.github.com/repos/${encodeURIComponent(ghConfig.owner)}/${encodeURIComponent(ghConfig.repo)}/contents/${ghConfig.path}`;
+        const headers = {
+          Authorization: `Bearer ${ghConfig.token}`,
+          Accept: 'application/vnd.github+json',
+          'Content-Type': 'application/json',
+        };
+        try {
+          let sha = undefined;
+          const getRes = await fetch(`${apiUrl}?ref=${encodeURIComponent(ghConfig.branch)}&t=${Date.now()}`, { headers });
+          if (getRes.ok) {
+            const meta = await getRes.json();
+            sha = meta.sha;
+          } else if (getRes.status !== 404) {
+            throw new Error(`GitHub lookup failed (${getRes.status})`);
+          }
+
+          const payload = {
+            message: `Update ${ghConfig.path} via Hunters Game Schedule`,
+            content: utf8ToBase64(JSON.stringify(state, null, 2) + '\n'),
+            branch: ghConfig.branch,
+          };
+          if (sha) payload.sha = sha;
+
+          const putRes = await fetch(apiUrl, {
+            method: 'PUT',
+            headers,
+            body: JSON.stringify(payload),
+          });
+          if (!putRes.ok) {
+            const errBody = await putRes.json().catch(() => ({}));
+            throw new Error(errBody.message || `HTTP ${putRes.status}`);
+          }
+          setSyncIndicator('synced', 'Synced');
+          const infoEl = document.getElementById('ghLastSyncInfo');
+          if (infoEl) infoEl.textContent = 'Last pushed: ' + new Date().toLocaleTimeString();
+          if (!silent) showToast('Pushed games.json to GitHub!');
+          return true;
+        } catch (err) {
+          setSyncIndicator('error', 'Push Failed');
+          if (!silent) showToast('GitHub push failed: ' + err.message);
+          return false;
+        } finally {
+          ghSyncing = false;
+        }
+      }
+
+      function saveState(skipAutoPush) {
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+        } catch (e) {
+          // ignore storage errors
+        }
+        if (!skipAutoPush && ghConfig.token && ghConfig.autoPush) {
+          pushToGitHub(true);
+        }
+      }
+
+      function getPalette(colorId) {
+        return PALETTE.find((p) => p.id === colorId) || PALETTE[0];
+      }
+
+      function getGameById(id) {
+        return state.games.find((g) => g.id === id) || { id: 'unknown', name: 'Unknown Game', platform: '', color: 'cyan' };
+      }
+
+      function formatTime12h(hhmm) {
+        if (!hhmm) return '';
+        const [hStr, mStr] = hhmm.split(':');
+        let h = parseInt(hStr, 10);
+        const ampm = h >= 12 ? 'PM' : 'AM';
+        h = h % 12 || 12;
+        return `${h}:${mStr} ${ampm}`;
+      }
+
+      function escapeHtml(str) {
+        return String(str)
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#39;');
+      }
+
+      let toastTimer = null;
+      function showToast(msg) {
+        const toast = document.getElementById('toast');
+        const toastMsg = document.getElementById('toastMessage');
+        toastMsg.textContent = msg;
+        toast.classList.remove('hidden');
+        toast.classList.add('flex');
+        if (toastTimer) clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => {
+          toast.classList.add('hidden');
+          toast.classList.remove('flex');
+        }, 2600);
+      }
+
+      function statusBadge(status) {
+        if (status === 'confirmed') {
+          return '<span class="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">Confirmed</span>';
+        }
+        if (status === 'done') {
+          return '<span class="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-slate-700/60 text-slate-300 border border-slate-600/50">Done</span>';
+        }
+        return '<span class="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-amber-500/15 text-amber-300 border border-amber-500/30">Planned</span>';
+      }
+
+      function renderAll() {
+        renderWeekHeader();
+        renderFilterBar();
+        renderViewToggle();
+        renderSchedule();
+      }
+
+      function renderWeekHeader() {
+        const end = addDays(currentWeekStart, 6);
+        const opts = { month: 'short', day: 'numeric' };
+        const startStr = currentWeekStart.toLocaleDateString('en-US', opts);
+        const endStr = end.toLocaleDateString('en-US', { ...opts, year: 'numeric' });
+        document.getElementById('weekRangeLabel').textContent = `${startStr} – ${endStr}`;
+
+        const weekDates = new Set();
+        for (let i = 0; i < 7; i++) weekDates.add(toISODate(addDays(currentWeekStart, i)));
+        const weekSessions = state.sessions.filter((s) => weekDates.has(s.date));
+        const confirmed = weekSessions.filter((s) => s.status === 'confirmed').length;
+        const done = weekSessions.filter((s) => s.status === 'done').length;
+
+        document.getElementById('weekStats').innerHTML = `
+          <span><strong class="text-white">${weekSessions.length}</strong> planned</span>
+          <span class="text-slate-600">•</span>
+          <span><strong class="text-emerald-400">${confirmed}</strong> confirmed</span>
+          <span class="text-slate-600 hidden sm:inline">•</span>
+          <span class="hidden sm:inline"><strong class="text-slate-300">${done}</strong> done</span>
+        `;
+      }
+
+      function renderViewToggle() {
+        const weekBtn = document.getElementById('viewWeekBtn');
+        const listBtn = document.getElementById('viewListBtn');
+        if (viewMode === 'week') {
+          weekBtn.className = 'px-2.5 py-1 rounded-md text-xs font-medium bg-cyan-500 text-slate-950 transition-colors';
+          listBtn.className = 'px-2.5 py-1 rounded-md text-xs font-medium text-slate-400 hover:text-white transition-colors';
+        } else {
+          listBtn.className = 'px-2.5 py-1 rounded-md text-xs font-medium bg-cyan-500 text-slate-950 transition-colors';
+          weekBtn.className = 'px-2.5 py-1 rounded-md text-xs font-medium text-slate-400 hover:text-white transition-colors';
+        }
+      }
+
+      function renderFilterBar() {
+        const bar = document.getElementById('gameFilterBar');
+        const allActive = selectedGameFilter === 'all';
+        let html = `
+          <button data-filter="all" class="shrink-0 px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
+            allActive
+              ? 'bg-cyan-500/20 border-cyan-500/50 text-cyan-300'
+              : 'bg-slate-900 border-slate-800 text-slate-400 hover:text-white hover:border-slate-700'
+          }">All Games</button>
+        `;
+
+        for (const g of state.games) {
+          const p = getPalette(g.color);
+          const active = selectedGameFilter === g.id;
+          html += `
+            <button data-filter="${escapeHtml(g.id)}" class="shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
+              active
+                ? `${p.bg} ${p.border} ${p.text}`
+                : 'bg-slate-900 border-slate-800 text-slate-400 hover:text-white hover:border-slate-700'
+            }">
+              <span class="w-2 h-2 rounded-full ${p.dot}"></span>
+              <span>${escapeHtml(g.name)}</span>
+            </button>
+          `;
+        }
+        bar.innerHTML = html;
+      }
+
+      function renderSchedule() {
+        const container = document.getElementById('scheduleContainer');
+        const todayISO = toISODate(new Date());
+
+        const filteredSessions = state.sessions
+          .filter((s) => selectedGameFilter === 'all' || s.gameId === selectedGameFilter)
+          .slice()
+          .sort((a, b) => (a.date + a.startTime).localeCompare(b.date + b.startTime));
+
+        if (viewMode === 'week') {
+          let gridHtml = '<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-7 gap-3">';
+          for (let i = 0; i < 7; i++) {
+            const d = addDays(currentWeekStart, i);
+            const iso = toISODate(d);
+            const isToday = iso === todayISO;
+            const dayName = d.toLocaleDateString('en-US', { weekday: 'short' });
+            const dayNum = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+            const daySessions = filteredSessions.filter((s) => s.date === iso);
+
+            gridHtml += `
+              <div class="flex flex-col rounded-2xl border ${
+                isToday ? 'border-cyan-500/70 bg-slate-950/75 backdrop-blur-md shadow-lg shadow-cyan-500/10' : 'border-slate-800/80 bg-slate-950/60 backdrop-blur-md'
+              } min-h-[190px] overflow-hidden">
+                <div class="px-3 py-2.5 border-b border-slate-800/80 flex items-center justify-between ${isToday ? 'bg-cyan-500/10' : ''}">
+                  <div>
+                    <div class="text-xs font-semibold ${isToday ? 'text-cyan-300' : 'text-slate-300'}">${dayName} ${isToday ? '• Today' : ''}</div>
+                    <div class="text-[11px] text-slate-500">${dayNum}</div>
+                  </div>
+                  <button data-add-date="${iso}" class="w-6 h-6 rounded-lg bg-slate-800 hover:bg-cyan-500 hover:text-slate-950 text-slate-300 flex items-center justify-center transition-colors" title="Plan session on ${dayNum}">
+                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+                    </svg>
+                  </button>
+                </div>
+                <div class="p-2.5 flex-1 space-y-2">
+                  ${
+                    daySessions.length === 0
+                      ? '<div class="h-full flex items-center justify-center text-[11px] text-slate-600 py-6">Free day</div>'
+                      : daySessions.map((s) => renderSessionCard(s)).join('')
+                  }
+                </div>
+              </div>
+            `;
+          }
+          gridHtml += '</div>';
+          container.innerHTML = gridHtml;
+        } else {
+          // Agenda list view for the current week
+          const weekDates = [];
+          for (let i = 0; i < 7; i++) weekDates.push(toISODate(addDays(currentWeekStart, i)));
+          const weekSet = new Set(weekDates);
+          const weekSessions = filteredSessions.filter((s) => weekSet.has(s.date));
+
+          if (weekSessions.length === 0) {
+            container.innerHTML = `
+              <div class="rounded-2xl border border-slate-800 bg-slate-900/50 p-10 text-center space-y-3">
+                <p class="text-sm text-slate-400">No sessions planned for this week yet.</p>
+                <button id="emptyAddBtn" class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 text-sm font-semibold transition-colors">
+                  Plan First Session
+                </button>
+              </div>
+            `;
+            const emptyBtn = document.getElementById('emptyAddBtn');
+            if (emptyBtn) emptyBtn.addEventListener('click', () => openSessionModal(null, toISODate(currentWeekStart)));
+            return;
+          }
+
+          let listHtml = '<div class="space-y-2.5">';
+          for (const s of weekSessions) {
+            const g = getGameById(s.gameId);
+            const p = getPalette(g.color);
+            const dObj = new Date(s.date + 'T00:00:00');
+            const dateLabel = dObj.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+            listHtml += `
+              <div data-edit-session="${escapeHtml(s.id)}" class="cursor-pointer rounded-2xl border ${p.border} bg-slate-900/80 hover:bg-slate-800/80 p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 transition-colors">
+                <div class="flex items-start gap-3">
+                  <div class="w-2.5 h-2.5 rounded-full ${p.dot} mt-1.5 shrink-0"></div>
+                  <div>
+                    <div class="flex items-center gap-2 flex-wrap">
+                      <span class="font-semibold text-white text-sm">${escapeHtml(g.name)}</span>
+                      ${g.platform ? `<span class="text-[11px] text-slate-400 bg-slate-800 px-2 py-0.5 rounded">${escapeHtml(g.platform)}</span>` : ''}
+                      ${statusBadge(s.status)}
+                    </div>
+                    <div class="text-xs text-slate-400 mt-1">
+                      ${dateLabel} • ${formatTime12h(s.startTime)} – ${formatTime12h(s.endTime)}
+                    </div>
+                    ${s.notes ? `<div class="text-xs text-slate-300 mt-1.5">${escapeHtml(s.notes)}</div>` : ''}
+                  </div>
+                </div>
+                <div class="flex items-center gap-2 self-end sm:self-center">
+                  <button data-cycle-status="${escapeHtml(s.id)}" class="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs text-slate-200 transition-colors">
+                    Next Status
+                  </button>
+                </div>
+              </div>
+            `;
+          }
+          listHtml += '</div>';
+          container.innerHTML = listHtml;
+        }
+      }
+
+      function renderSessionCard(s) {
+        const g = getGameById(s.gameId);
+        const p = getPalette(g.color);
+        return `
+          <div data-edit-session="${escapeHtml(s.id)}" class="group cursor-pointer rounded-xl border ${p.border} ${p.bg} p-2.5 hover:brightness-110 transition-all space-y-1.5">
+            <div class="flex items-start justify-between gap-1">
+              <div class="font-semibold text-xs text-white leading-tight">${escapeHtml(g.name)}</div>
+              <button data-cycle-status="${escapeHtml(s.id)}" class="shrink-0 opacity-80 hover:opacity-100" title="Click to cycle status">
+                ${statusBadge(s.status)}
+              </button>
+            </div>
+            <div class="text-[11px] text-slate-300 font-medium">
+              ${formatTime12h(s.startTime)} – ${formatTime12h(s.endTime)}
+            </div>
+            ${s.notes ? `<div class="text-[11px] text-slate-400 line-clamp-2">${escapeHtml(s.notes)}</div>` : ''}
+          </div>
+        `;
+      }
+
+      // Session Modal
+      function openSessionModal(sessionId, defaultDate) {
+        const modal = document.getElementById('sessionModal');
+        const select = document.getElementById('sessionGameSelect');
+        select.innerHTML = state.games
+          .map((g) => `<option value="${escapeHtml(g.id)}">${escapeHtml(g.name)}${g.platform ? ` (${escapeHtml(g.platform)})` : ''}</option>`)
+          .join('');
+
+        const delBtn = document.getElementById('deleteSessionBtn');
+        if (sessionId) {
+          const s = state.sessions.find((item) => item.id === sessionId);
+          if (!s) return;
+          document.getElementById('sessionModalTitle').textContent = 'Edit Game Session';
+          document.getElementById('sessionIdInput').value = s.id;
+          select.value = s.gameId;
+          document.getElementById('sessionDateInput').value = s.date;
+          document.getElementById('sessionStartInput').value = s.startTime;
+          document.getElementById('sessionEndInput').value = s.endTime;
+          document.getElementById('sessionNotesInput').value = s.notes || '';
+          document.getElementById('sessionStatusSelect').value = s.status || 'planned';
+          delBtn.classList.remove('hidden');
+        } else {
+          document.getElementById('sessionModalTitle').textContent = 'Plan Game Session';
+          document.getElementById('sessionIdInput').value = '';
+          if (state.games.length > 0) select.value = selectedGameFilter !== 'all' ? selectedGameFilter : state.games[0].id;
+          document.getElementById('sessionDateInput').value = defaultDate || toISODate(new Date());
+          document.getElementById('sessionStartInput').value = '19:30';
+          document.getElementById('sessionEndInput').value = '21:30';
+          document.getElementById('sessionNotesInput').value = '';
+          document.getElementById('sessionStatusSelect').value = 'planned';
+          delBtn.classList.add('hidden');
+        }
+
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+      }
+
+      function closeSessionModal() {
+        const modal = document.getElementById('sessionModal');
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+      }
+
+      // Games Modal
+      function openGamesModal() {
+        renderGamesModalContent();
+        const modal = document.getElementById('gamesModal');
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+      }
+
+      function closeGamesModal() {
+        const modal = document.getElementById('gamesModal');
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+      }
+
+      function renderGamesModalContent() {
+        const swatchRow = document.getElementById('colorPickerRow');
+        swatchRow.innerHTML = PALETTE.map((p) => `
+          <button type="button" data-swatch="${p.id}" class="w-6 h-6 rounded-full border-2 transition-transform ${
+            selectedSwatchColor === p.id ? 'border-white scale-110' : 'border-transparent opacity-70 hover:opacity-100'
+          }" style="background-color: ${p.swatch}" aria-label="${p.id}"></button>
+        `).join('');
+
+        const list = document.getElementById('gamesListContainer');
+        if (state.games.length === 0) {
+          list.innerHTML = '<p class="text-xs text-slate-500 text-center py-4">No games added yet.</p>';
+          return;
+        }
+        list.innerHTML = state.games.map((g) => {
+          const p = getPalette(g.color);
+          const count = state.sessions.filter((s) => s.gameId === g.id).length;
+          return `
+            <div class="flex items-center justify-between gap-3 rounded-xl border border-slate-800 bg-slate-950/60 px-3.5 py-2.5">
+              <div class="flex items-center gap-2.5 min-w-0">
+                <span class="w-3 h-3 rounded-full ${p.dot} shrink-0"></span>
+                <div class="min-w-0">
+                  <div class="text-sm font-medium text-white truncate">${escapeHtml(g.name)}</div>
+                  <div class="text-[11px] text-slate-400">${escapeHtml(g.platform || 'Any platform')} • ${count} session${count === 1 ? '' : 's'}</div>
+                </div>
+              </div>
+              <button data-remove-game="${escapeHtml(g.id)}" class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-rose-500/20 hover:text-rose-300 text-xs text-slate-400 transition-colors">
+                Remove
+              </button>
+            </div>
+          `;
+        }).join('');
+      }
+
+
+
+      // Event Listeners
+      document.getElementById('prevWeekBtn').addEventListener('click', () => {
+        currentWeekStart = addDays(currentWeekStart, -7);
+        renderAll();
+      });
+
+      document.getElementById('nextWeekBtn').addEventListener('click', () => {
+        currentWeekStart = addDays(currentWeekStart, 7);
+        renderAll();
+      });
+
+      document.getElementById('todayBtn').addEventListener('click', () => {
+        currentWeekStart = getSundayOfWeek(new Date());
+        renderAll();
+      });
+
+      document.getElementById('viewWeekBtn').addEventListener('click', () => {
+        viewMode = 'week';
+        renderAll();
+      });
+
+      document.getElementById('viewListBtn').addEventListener('click', () => {
+        viewMode = 'list';
+        renderAll();
+      });
+
+      document.getElementById('gameFilterBar').addEventListener('click', (e) => {
+        const btn = e.target.closest('[data-filter]');
+        if (!btn) return;
+        selectedGameFilter = btn.getAttribute('data-filter');
+        renderAll();
+      });
+
+      document.getElementById('scheduleContainer').addEventListener('click', (e) => {
+        const cycleBtn = e.target.closest('[data-cycle-status]');
+        if (cycleBtn) {
+          e.stopPropagation();
+          const id = cycleBtn.getAttribute('data-cycle-status');
+          const s = state.sessions.find((item) => item.id === id);
+          if (s) {
+            const order = ['planned', 'confirmed', 'done'];
+            s.status = order[(order.indexOf(s.status) + 1) % order.length];
+            saveState();
+            renderAll();
+          }
+          return;
+        }
+
+        const addBtn = e.target.closest('[data-add-date]');
+        if (addBtn) {
+          openSessionModal(null, addBtn.getAttribute('data-add-date'));
+          return;
+        }
+
+        const card = e.target.closest('[data-edit-session]');
+        if (card) {
+          openSessionModal(card.getAttribute('data-edit-session'));
+        }
+      });
+
+      document.getElementById('openAddSessionBtn').addEventListener('click', () => openSessionModal(null, toISODate(new Date())));
+      document.getElementById('closeSessionModalBtn').addEventListener('click', closeSessionModal);
+      document.getElementById('cancelSessionBtn').addEventListener('click', closeSessionModal);
+
+      document.getElementById('sessionForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const id = document.getElementById('sessionIdInput').value;
+        const gameId = document.getElementById('sessionGameSelect').value;
+        const date = document.getElementById('sessionDateInput').value;
+        const startTime = document.getElementById('sessionStartInput').value;
+        const endTime = document.getElementById('sessionEndInput').value;
+        const notes = document.getElementById('sessionNotesInput').value.trim();
+        const status = document.getElementById('sessionStatusSelect').value;
+
+        if (!gameId || !date) return;
+
+        if (id) {
+          const existing = state.sessions.find((s) => s.id === id);
+          if (existing) {
+            existing.gameId = gameId;
+            existing.date = date;
+            existing.startTime = startTime;
+            existing.endTime = endTime;
+            existing.notes = notes;
+            existing.status = status;
+          }
+          showToast('Session updated');
+        } else {
+          state.sessions.push({
+            id: 's-' + Date.now(),
+            gameId,
+            date,
+            startTime,
+            endTime,
+            notes,
+            status,
+          });
+          showToast('Session added');
+        }
+        saveState();
+        closeSessionModal();
+        renderAll();
+      });
+
+      document.getElementById('deleteSessionBtn').addEventListener('click', () => {
+        const id = document.getElementById('sessionIdInput').value;
+        if (!id) return;
+        state.sessions = state.sessions.filter((s) => s.id !== id);
+        saveState();
+        closeSessionModal();
+        renderAll();
+        showToast('Session deleted');
+      });
+
+      // Settings Modal Events
+      function openSettingsModal() {
+        resetArmed = false;
+        document.getElementById('confirmResetBtn').textContent = 'Reset Data';
+        const modal = document.getElementById('settingsModal');
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+      }
+
+      function closeSettingsModal() {
+        const modal = document.getElementById('settingsModal');
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+      }
+
+      document.getElementById('settingsBtn').addEventListener('click', openSettingsModal);
+      document.getElementById('closeSettingsModalBtn').addEventListener('click', closeSettingsModal);
+
+      // Games Modal Events
+      document.getElementById('manageGamesBtn').addEventListener('click', () => {
+        closeSettingsModal();
+        openGamesModal();
+      });
+      document.getElementById('closeGamesModalBtn').addEventListener('click', closeGamesModal);
+
+      document.getElementById('colorPickerRow').addEventListener('click', (e) => {
+        const btn = e.target.closest('[data-swatch]');
+        if (!btn) return;
+        selectedSwatchColor = btn.getAttribute('data-swatch');
+        renderGamesModalContent();
+      });
+
+      document.getElementById('addGameForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const nameInput = document.getElementById('newGameNameInput');
+        const platformInput = document.getElementById('newGamePlatformInput');
+        const name = nameInput.value.trim();
+        if (!name) return;
+        state.games.push({
+          id: 'g-' + Date.now(),
+          name,
+          platform: platformInput.value.trim(),
+          color: selectedSwatchColor,
+        });
+        nameInput.value = '';
+        platformInput.value = '';
+        saveState();
+        renderGamesModalContent();
+        renderAll();
+        showToast(`Added ${name}`);
+      });
+
+      document.getElementById('gamesListContainer').addEventListener('click', (e) => {
+        const btn = e.target.closest('[data-remove-game]');
+        if (!btn) return;
+        const gid = btn.getAttribute('data-remove-game');
+        if (state.games.length <= 1) {
+          showToast('Keep at least one game in your roster.');
+          return;
+        }
+        state.games = state.games.filter((g) => g.id !== gid);
+        state.sessions = state.sessions.filter((s) => s.gameId !== gid);
+        if (selectedGameFilter === gid) selectedGameFilter = 'all';
+        saveState();
+        renderGamesModalContent();
+        renderAll();
+        showToast('Game removed');
+      });
+
+
+
+      document.getElementById('exportJsonBtn').addEventListener('click', () => {
+        const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `game-schedule-${toISODate(new Date())}.json`;
+        a.click();
+        URL.revokeObjectURL(url);
+        showToast('Exported JSON backup');
+      });
+
+      document.getElementById('importJsonInput').addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = () => {
+          try {
+            const parsed = JSON.parse(reader.result);
+            if (parsed && Array.isArray(parsed.games) && Array.isArray(parsed.sessions)) {
+              state = {
+                friendName: parsed.friendName || 'Duo Partner',
+                games: parsed.games,
+                sessions: parsed.sessions,
+              };
+              selectedGameFilter = 'all';
+              saveState();
+              renderAll();
+              closeSettingsModal();
+              showToast('Schedule imported');
+            } else {
+              showToast('Invalid schedule JSON format');
+            }
+          } catch (err) {
+            showToast('Could not parse JSON file');
+          }
+        };
+        reader.readAsText(file);
+        e.target.value = '';
+      });
+
+      document.getElementById('confirmResetBtn').addEventListener('click', () => {
+        const btn = document.getElementById('confirmResetBtn');
+        if (!resetArmed) {
+          resetArmed = true;
+          btn.textContent = 'Click again to confirm';
+          return;
+        }
+        state = buildDefaultState();
+        selectedGameFilter = 'all';
+        saveState();
+        renderAll();
+        closeSettingsModal();
+        showToast('Schedule reset to defaults');
+      });
+
+
+      // GitHub Sync Modal Events
+      function openGithubModal() {
+        document.getElementById('ghOwnerInput').value = ghConfig.owner;
+        document.getElementById('ghRepoInput').value = ghConfig.repo;
+        document.getElementById('ghBranchInput').value = ghConfig.branch;
+        document.getElementById('ghPathInput').value = ghConfig.path;
+        document.getElementById('ghTokenInput').value = ghConfig.token || '';
+        document.getElementById('ghAutoPushInput').checked = !!ghConfig.autoPush;
+        const modal = document.getElementById('githubModal');
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+      }
+
+      function closeGithubModal() {
+        const modal = document.getElementById('githubModal');
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+      }
+
+      document.getElementById('githubSyncBtn').addEventListener('click', () => { closeSettingsModal(); openGithubModal(); });
+      document.getElementById('closeGithubModalBtn').addEventListener('click', closeGithubModal);
+
+      document.getElementById('githubForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        ghConfig = {
+          owner: document.getElementById('ghOwnerInput').value.trim() || 'SaberAltered',
+          repo: document.getElementById('ghRepoInput').value.trim() || 'MHS_SCHEDULE',
+          branch: document.getElementById('ghBranchInput').value.trim() || 'main',
+          path: document.getElementById('ghPathInput').value.trim() || 'games.json',
+          token: document.getElementById('ghTokenInput').value.trim(),
+          autoPush: document.getElementById('ghAutoPushInput').checked,
+        };
+        saveGhConfig();
+        setSyncIndicator(ghConfig.token ? 'synced' : 'idle', ghConfig.token ? 'Ready' : 'GitHub Sync');
+        closeGithubModal();
+        showToast('GitHub sync settings saved');
+      });
+
+      document.getElementById('ghPullBtn').addEventListener('click', () => pullFromGitHub(false));
+      document.getElementById('ghPushBtn').addEventListener('click', () => {
+        ghConfig.owner = document.getElementById('ghOwnerInput').value.trim() || ghConfig.owner;
+        ghConfig.repo = document.getElementById('ghRepoInput').value.trim() || ghConfig.repo;
+        ghConfig.branch = document.getElementById('ghBranchInput').value.trim() || ghConfig.branch;
+        ghConfig.path = document.getElementById('ghPathInput').value.trim() || ghConfig.path;
+        ghConfig.token = document.getElementById('ghTokenInput').value.trim();
+        ghConfig.autoPush = document.getElementById('ghAutoPushInput').checked;
+        saveGhConfig();
+        pushToGitHub(false);
+      });
+
+      // Apply SCHEDULE_CONFIG branding & background
+      document.title = SCHEDULE_CONFIG.title;
+      document.getElementById('pageTitleHeading').textContent = SCHEDULE_CONFIG.title;
+      document.getElementById('headerIconImg').src = SCHEDULE_CONFIG.iconPath;
+      if (SCHEDULE_CONFIG.backgroundPath) {
+        document.getElementById('siteBg').style.backgroundImage = `url('${SCHEDULE_CONFIG.backgroundPath}')`;
+      }
+
+      // Initial render & background pull from games.json
+      renderAll();
+      if (ghConfig.token) setSyncIndicator('idle', 'Ready');
+      pullFromGitHub(true);
+    })();
+  </script>
+</body>
+</html>
