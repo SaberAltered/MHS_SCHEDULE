@@ -21,15 +21,18 @@
     };
   </script>
   <style>
+    html {
+      background-color: #0b0f17;
+    }
     body {
       font-family: 'Inter', system-ui, sans-serif;
-      background-color: #0b0f17;
+      background-color: transparent;
       color: #e2e8f0;
     }
     .site-bg {
       position: fixed;
       inset: 0;
-      z-index: -2;
+      z-index: -1;
       pointer-events: none;
       background-color: #0b0f17;
       background-size: cover;
@@ -126,6 +129,9 @@
           </button>
         </div>
         <h2 id="weekRangeLabel" class="text-sm sm:text-base font-semibold text-white ml-1"></h2>
+        <button id="fillWeekBtn" class="px-2.5 py-1 rounded-lg bg-slate-800/80 hover:bg-slate-700 border border-slate-700 text-[11px] font-medium text-cyan-300 transition-colors" title="Fill this week with your default Sunday–Friday lineup">
+          + Fill Default Week
+        </button>
       </div>
 
       <div class="flex items-center justify-between md:justify-end gap-3 flex-wrap">
@@ -1062,6 +1068,33 @@
       document.getElementById('todayBtn').addEventListener('click', () => {
         currentWeekStart = getSundayOfWeek(new Date());
         renderAll();
+      });
+
+      document.getElementById('fillWeekBtn').addEventListener('click', () => {
+        let added = 0;
+        for (const item of SCHEDULE_CONFIG.weeklyTemplate) {
+          const d = toISODate(addDays(currentWeekStart, item.dayOffset));
+          const exists = state.sessions.some((sess) => sess.date === d && sess.gameId === item.gameId);
+          if (!exists) {
+            state.sessions.push({
+              id: 's-' + d + '-' + item.gameId + '-' + Math.random().toString(36).slice(2, 6),
+              date: d,
+              gameId: item.gameId,
+              startTime: item.startTime,
+              endTime: item.endTime,
+              notes: item.notes || '',
+              status: item.status || 'planned',
+            });
+            added++;
+          }
+        }
+        if (added > 0) {
+          saveState();
+          renderAll();
+          showToast(`Added ${added} default session${added === 1 ? '' : 's'} to this week`);
+        } else {
+          showToast('This week already has your default games.');
+        }
       });
 
       document.getElementById('viewWeekBtn').addEventListener('click', () => {
