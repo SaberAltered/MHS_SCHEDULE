@@ -1,0 +1,84 @@
+{
+  "games": [
+    {
+      "id": "g-lone-echo",
+      "name": "Lone Echo",
+      "platform": "PCVR",
+      "color": "cyan"
+    },
+    {
+      "id": "g-tabor",
+      "name": "Ghosts of Tabor",
+      "platform": "PCVR / Quest",
+      "color": "amber"
+    },
+    {
+      "id": "g-007",
+      "name": "007 First Light",
+      "platform": "PC",
+      "color": "indigo"
+    },
+    {
+      "id": "g-hsr",
+      "name": "Honkai: Star Rail",
+      "platform": "PC",
+      "color": "violet"
+    }
+  ],
+  "sessions": [
+    {
+      "id": "s-sun",
+      "date": "2026-11-08",
+      "gameId": "g-lone-echo",
+      "startTime": "19:30",
+      "endTime": "21:30",
+      "notes": "",
+      "status": "planned"
+    },
+    {
+      "id": "s-mon",
+      "date": "2026-11-09",
+      "gameId": "g-lone-echo",
+      "startTime": "19:30",
+      "endTime": "21:30",
+      "notes": "",
+      "status": "planned"
+    },
+    {
+      "id": "s-tue",
+      "date": "2026-11-10",
+      "gameId": "g-tabor",
+      "startTime": "19:30",
+      "endTime": "21:30",
+      "notes": "",
+      "status": "planned"
+    },
+    {
+      "id": "s-wed",
+      "date": "2026-11-11",
+      "gameId": "g-tabor",
+      "startTime": "19:30",
+      "endTime": "21:30",
+      "notes": "",
+      "status": "planned"
+    },
+    {
+      "id": "s-thu",
+      "date": "2026-11-12",
+      "gameId": "g-007",
+      "startTime": "19:30",
+      "endTime": "21:30",
+      "notes": "",
+      "status": "planned"
+    },
+    {
+      "id": "s-fri",
+      "date": "2026-11-13",
+      "gameId": "g-hsr",
+      "startTime": "19:30",
+      "endTime": "21:30",
+      "notes": "",
+      "status": "planned"
+    }
+  ]
+}
