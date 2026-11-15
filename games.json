@@ -1,4 +1,5 @@
 {
+  "friendName": "Duo Partner",
   "games": [
     {
       "id": "g-lone-echo",
@@ -79,6 +80,66 @@
       "endTime": "21:30",
       "notes": "NEW AHA STORYLINE",
       "status": "planned"
+    },
+    {
+      "id": "s-2026-11-15-g-lone-echo-uubq",
+      "date": "2026-11-15",
+      "gameId": "g-lone-echo",
+      "startTime": "19:30",
+      "endTime": "21:30",
+      "notes": "",
+      "status": "planned",
+      "repeatWeekly": true
+    },
+    {
+      "id": "s-2026-11-16-g-lone-echo-6mnb",
+      "date": "2026-11-16",
+      "gameId": "g-lone-echo",
+      "startTime": "19:30",
+      "endTime": "21:30",
+      "notes": "",
+      "status": "planned",
+      "repeatWeekly": true
+    },
+    {
+      "id": "s-2026-11-17-g-tabor-b2bp",
+      "date": "2026-11-17",
+      "gameId": "g-tabor",
+      "startTime": "19:30",
+      "endTime": "21:30",
+      "notes": "",
+      "status": "planned",
+      "repeatWeekly": true
+    },
+    {
+      "id": "s-2026-11-18-g-tabor-s4cc",
+      "date": "2026-11-18",
+      "gameId": "g-tabor",
+      "startTime": "19:30",
+      "endTime": "21:30",
+      "notes": "",
+      "status": "planned",
+      "repeatWeekly": true
+    },
+    {
+      "id": "s-2026-11-19-g-007-3zgg",
+      "date": "2026-11-19",
+      "gameId": "g-007",
+      "startTime": "19:30",
+      "endTime": "21:30",
+      "notes": "",
+      "status": "planned",
+      "repeatWeekly": true
+    },
+    {
+      "id": "s-2026-11-20-g-hsr-05ah",
+      "date": "2026-11-20",
+      "gameId": "g-hsr",
+      "startTime": "19:30",
+      "endTime": "21:30",
+      "notes": "",
+      "status": "planned",
+      "repeatWeekly": true
     }
   ]
 }
