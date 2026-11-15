@@ -650,10 +650,20 @@
       }
 
       async function pullFromGitHub(silent) {
+        const apiUrl = `https://api.github.com/repos/${encodeURIComponent(ghConfig.owner)}/${encodeURIComponent(ghConfig.repo)}/contents/${ghConfig.path}?ref=${encodeURIComponent(ghConfig.branch)}`;
         const rawUrl = `https://raw.githubusercontent.com/${encodeURIComponent(ghConfig.owner)}/${encodeURIComponent(ghConfig.repo)}/${encodeURIComponent(ghConfig.branch)}/${ghConfig.path}?t=${Date.now()}`;
         try {
           setSyncIndicator('syncing', 'Syncing...');
-          const res = await fetch(rawUrl, { cache: 'no-store' });
+          const res = sessionToken
+            ? await fetch(apiUrl, {
+                cache: 'no-store',
+                headers: {
+                  Authorization: `Bearer ${sessionToken}`,
+                  Accept: 'application/vnd.github.raw+json',
+                },
+              })
+            : await fetch(rawUrl, { cache: 'no-store' });
+
           if (!res.ok) {
             setSyncIndicator('idle', sessionToken ? 'Unlocked' : (ghConfig.encryptedToken ? 'Locked' : 'Configure'));
             if (!silent) showToast(`No ${ghConfig.path} found yet (HTTP ${res.status})`);
@@ -662,7 +672,6 @@
           const parsed = await res.json();
           if (parsed && Array.isArray(parsed.games) && Array.isArray(parsed.sessions)) {
             state = {
-              friendName: parsed.friendName || 'Duo Partner',
               games: parsed.games,
               sessions: parsed.sessions,
             };
@@ -679,6 +688,20 @@
         return false;
       }
 
+      async function fetchRemoteSha(apiUrl, getHeaders) {
+        const getRes = await fetch(`${apiUrl}?ref=${encodeURIComponent(ghConfig.branch)}`, {
+          cache: 'no-store',
+          headers: getHeaders,
+        });
+        if (getRes.ok) {
+          const meta = await getRes.json();
+          return meta.sha;
+        }
+        if (getRes.status === 404) return undefined;
+        const errBody = await getRes.json().catch(() => ({}));
+        throw new Error(errBody.message || `GitHub lookup failed (${getRes.status})`);
+      }
+
       async function pushToGitHub(silent) {
         if (!sessionToken) {
           if (!silent) showToast(ghConfig.encryptedToken ? 'Unlock GitHub Sync with your passphrase first.' : 'Add & encrypt your GitHub token first.');
@@ -688,45 +711,57 @@
         ghSyncing = true;
         setSyncIndicator('syncing', 'Pushing...');
         const apiUrl = `https://api.github.com/repos/${encodeURIComponent(ghConfig.owner)}/${encodeURIComponent(ghConfig.repo)}/contents/${ghConfig.path}`;
-        const headers = {
+        const getHeaders = {
           Authorization: `Bearer ${sessionToken}`,
           Accept: 'application/vnd.github+json',
+        };
+        const putHeaders = {
+          ...getHeaders,
           'Content-Type': 'application/json',
         };
         try {
-          let sha = undefined;
-          const getRes = await fetch(`${apiUrl}?ref=${encodeURIComponent(ghConfig.branch)}&t=${Date.now()}`, { headers });
-          if (getRes.ok) {
-            const meta = await getRes.json();
-            sha = meta.sha;
-          } else if (getRes.status !== 404) {
-            throw new Error(`GitHub lookup failed (${getRes.status})`);
+          let sha = await fetchRemoteSha(apiUrl, getHeaders);
+          const encodedContent = utf8ToBase64(JSON.stringify(state, null, 2) + '\n');
+          const buildPayload = (currentSha) => {
+            const p = {
+              message: `Update ${ghConfig.path} via Hunters Game Schedule`,
+              content: encodedContent,
+              branch: ghConfig.branch,
+            };
+            if (currentSha) p.sha = currentSha;
+            return p;
+          };
+
+          let putRes = await fetch(apiUrl, {
+            method: 'PUT',
+            headers: putHeaders,
+            body: JSON.stringify(buildPayload(sha)),
+          });
+
+          // Retry once on 409 SHA conflict
+          if (putRes.status === 409) {
+            sha = await fetchRemoteSha(apiUrl, getHeaders);
+            putRes = await fetch(apiUrl, {
+              method: 'PUT',
+              headers: putHeaders,
+              body: JSON.stringify(buildPayload(sha)),
+            });
           }
 
-          const payload = {
-            message: `Update ${ghConfig.path} via Hunters Game Schedule`,
-            content: utf8ToBase64(JSON.stringify(state, null, 2) + '\n'),
-            branch: ghConfig.branch,
-          };
-          if (sha) payload.sha = sha;
-
-          const putRes = await fetch(apiUrl, {
-            method: 'PUT',
-            headers,
-            body: JSON.stringify(payload),
-          });
           if (!putRes.ok) {
             const errBody = await putRes.json().catch(() => ({}));
             throw new Error(errBody.message || `HTTP ${putRes.status}`);
           }
+          const result = await putRes.json().catch(() => ({}));
+          const shortSha = result.commit && result.commit.sha ? result.commit.sha.slice(0, 7) : '';
           setSyncIndicator('synced', 'Synced');
           const infoEl = document.getElementById('ghLastSyncInfo');
-          if (infoEl) infoEl.textContent = 'Last pushed: ' + new Date().toLocaleTimeString();
-          if (!silent) showToast('Pushed games.json to GitHub!');
+          if (infoEl) infoEl.textContent = `Last pushed: ${new Date().toLocaleTimeString()}${shortSha ? ' (' + shortSha + ')' : ''}`;
+          showToast(shortSha ? `Pushed games.json (${shortSha})` : 'Pushed games.json to GitHub!');
           return true;
         } catch (err) {
           setSyncIndicator('error', 'Push Failed');
-          if (!silent) showToast('GitHub push failed: ' + err.message);
+          showToast('GitHub push failed: ' + err.message);
           return false;
         } finally {
           ghSyncing = false;
@@ -1484,17 +1519,25 @@
 
       document.getElementById('ghPullBtn').addEventListener('click', () => pullFromGitHub(false));
       document.getElementById('ghPushBtn').addEventListener('click', async () => {
-        if (!sessionToken && ghConfig.encryptedToken) {
-          const pass = document.getElementById('ghPassphraseInput').value;
-          if (pass) {
+        const typedToken = document.getElementById('ghTokenInput').value.trim();
+        const pass = document.getElementById('ghPassphraseInput').value;
+        if (typedToken) {
+          sessionToken = typedToken;
+          if (pass && pass.length >= 6) {
             try {
-              sessionToken = await decryptToken(ghConfig.encryptedToken, pass);
-              document.getElementById('ghPassphraseInput').value = '';
-              updateVaultUI();
-            } catch (err) {
-              showToast('Incorrect passphrase');
-              return;
-            }
+              ghConfig.encryptedToken = await encryptToken(typedToken, pass);
+              saveGhConfig();
+            } catch (e) {}
+          }
+          updateVaultUI();
+        } else if (!sessionToken && ghConfig.encryptedToken && pass) {
+          try {
+            sessionToken = await decryptToken(ghConfig.encryptedToken, pass);
+            document.getElementById('ghPassphraseInput').value = '';
+            updateVaultUI();
+          } catch (err) {
+            showToast('Incorrect passphrase');
+            return;
           }
         }
         pushToGitHub(false);
