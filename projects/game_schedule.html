@@ -25,6 +25,7 @@
       font-family: 'Inter', system-ui, sans-serif;
       background-color: #0b0f17;
       color: #e2e8f0;
+      transition: background-color 0.3s ease;
     }
     .site-bg {
       position: fixed;
@@ -45,6 +46,7 @@
       content: "";
       position: absolute;
       inset: 0;
+      transition: background 0.4s ease;
       background:
         linear-gradient(
           to bottom,
@@ -73,19 +75,76 @@
     ::-webkit-scrollbar-thumb:hover {
       background: #475569;
     }
+
+    /* =========================================
+       WEAKNESS IMPLANT EASTER EGG CSS
+       ========================================= */
+    body.weakness-implanted .site-bg::after {
+      background:
+        linear-gradient(
+          to bottom,
+          rgba(46, 16, 101, 0.45) 0%,   /* Deep violet */
+          rgba(192, 38, 211, 0.30) 45%, /* Fuchsia */
+          rgba(7, 10, 18, 0.85) 100%
+        ),
+        radial-gradient(circle at 45% 25%, transparent 25%, rgba(46, 16, 101, 0.70) 100%);
+    }
+    
+    .weakness-scanlines {
+      position: fixed;
+      inset: 0;
+      z-index: 40;
+      pointer-events: none;
+      background: linear-gradient(
+        to bottom,
+        rgba(255, 255, 255, 0),
+        rgba(255, 255, 255, 0) 50%,
+        rgba(192, 38, 211, 0.08) 50%,
+        rgba(192, 38, 211, 0.08)
+      );
+      background-size: 100% 4px;
+      display: none;
+      mix-blend-mode: screen;
+    }
+    body.weakness-implanted .weakness-scanlines {
+      display: block;
+    }
+    
+    body.weakness-implanted #pageTitleHeading {
+      color: #f5d0fe !important; 
+      text-shadow: 2px 0 0px #06b6d4, -2px 0 0px #c026d3;
+      letter-spacing: 0.5px;
+    }
+    
+    /* Aether Edit Tailwind Overrides */
+    body.weakness-implanted .bg-cyan-500 { background-color: #c026d3 !important; }
+    body.weakness-implanted .hover\:bg-cyan-400:hover { background-color: #d946ef !important; }
+    body.weakness-implanted .border-cyan-500\/70 { border-color: rgba(192, 38, 211, 0.7) !important; }
+    body.weakness-implanted .shadow-cyan-500\/10 { box-shadow: 0 10px 15px -3px rgba(192, 38, 211, 0.1), 0 4px 6px -4px rgba(192, 38, 211, 0.1) !important; }
+    body.weakness-implanted .shadow-cyan-500\/20 { box-shadow: 0 10px 15px -3px rgba(192, 38, 211, 0.2), 0 4px 6px -4px rgba(192, 38, 211, 0.1) !important; }
+    body.weakness-implanted .text-cyan-300 { color: #f0abfc !important; }
+
+    /* Make the active weakness icon pop fully */
+    body.weakness-implanted #weaknessToggle {
+      opacity: 1 !important;
+      filter: drop-shadow(0 0 6px rgba(192, 38, 211, 0.9));
+    }
   </style>
 </head>
-<body class="min-h-screen flex flex-col antialiased selection:bg-cyan-500/30 selection:text-cyan-200">
+<body class="min-h-screen flex flex-col antialiased selection:bg-fuchsia-500/30 selection:text-fuchsia-200">
   <div id="siteBg" class="site-bg"><img id="siteBgImg" src="../art/GameBg.webp" alt="" onerror="this.style.display='none'" /></div>
   <canvas id="coinRainCanvas" class="fixed inset-0 pointer-events-none z-50"></canvas>
+  <div class="weakness-scanlines"></div> <!-- Hacked Overlay -->
 
   <!-- Top Navigation / Header -->
   <header class="sticky top-0 z-30 border-b border-slate-800/70 bg-[#0b0f17]/75 backdrop-blur-md">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex flex-wrap items-center justify-between gap-3">
       <div class="flex items-center gap-3 min-w-0">
         <img id="headerIconImg" src="../art/SilverWolf.webp" alt="Silver Wolf coin" title="Click me!" class="w-10 h-10 rounded-full object-cover shrink-0 cursor-pointer transition-transform hover:scale-110 active:scale-95" onerror="this.style.display='none'" />
-        <div class="min-w-0">
-          <h1 id="pageTitleHeading" class="text-base sm:text-lg font-bold tracking-tight text-white truncate">Hunters Game Schedule</h1>
+        <div class="min-w-0 flex items-center gap-2">
+          <h1 id="pageTitleHeading" class="text-base sm:text-lg font-bold tracking-tight text-white truncate transition-all">Hunters Game Schedule</h1>
+          <!-- Weakness Implant Trigger (Image) -->
+          <img id="weaknessToggle" src="../art/quantum.webp" alt="Quantum Weakness" class="w-4 h-4 opacity-30 hover:opacity-100 hover:scale-110 hover:drop-shadow-[0_0_5px_rgba(192,38,211,0.8)] cursor-pointer select-none transition-all" title="Target locked..." onerror="this.style.display='none'" />
         </div>
       </div>
 
@@ -924,7 +983,7 @@
             gridHtml += `
               <div class="flex flex-col rounded-2xl border ${
                 isToday ? 'border-cyan-500/70 bg-slate-950/75 backdrop-blur-md shadow-lg shadow-cyan-500/10' : 'border-slate-800/80 bg-slate-950/60 backdrop-blur-md'
-              } min-h-[190px] overflow-hidden">
+              } min-h-[190px] overflow-hidden transition-colors">
                 <div class="px-3 py-2.5 border-b border-slate-800/80 flex items-center justify-between ${isToday ? 'bg-cyan-500/10' : ''}">
                   <div>
                     <div class="text-xs font-semibold ${isToday ? 'text-cyan-300' : 'text-slate-300'}">${dayName} ${isToday ? '• Today' : ''}</div>
@@ -1683,6 +1742,19 @@
       document.getElementById('headerIconImg').addEventListener('click', () => {
         launchCoinRain();
         playSilverWolfVoice();
+      });
+
+      // =========================================
+      // WEAKNESS IMPLANT EASTER EGG LOGIC
+      // =========================================
+      const weaknessBtn = document.getElementById('weaknessToggle');
+      weaknessBtn.addEventListener('click', () => {
+        document.body.classList.toggle('weakness-implanted');
+        if (document.body.classList.contains('weakness-implanted')) {
+          showToast('System Error: Quantum Weakness Implanted.');
+        } else {
+          showToast('Rebooting... Reality Restored.');
+        }
       });
 
       // Initial render & background pull from games.json
