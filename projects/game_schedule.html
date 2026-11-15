@@ -77,7 +77,7 @@
   <header class="sticky top-0 z-30 border-b border-slate-800/70 bg-[#0b0f17]/75 backdrop-blur-md">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex flex-wrap items-center justify-between gap-3">
       <div class="flex items-center gap-3 min-w-0">
-        <img id="headerIconImg" src="art/SilverWolf.webp" alt="Silver Wolf icon" class="w-10 h-10 rounded-full object-cover shrink-0" onerror="this.style.display='none'" />
+        <img id="headerIconImg" src="../art/SilverWolf.webp" alt="Silver Wolf icon" class="w-10 h-10 rounded-full object-cover shrink-0" onerror="this.style.display='none'" />
         <div class="min-w-0">
           <h1 id="pageTitleHeading" class="text-base sm:text-lg font-bold tracking-tight text-white truncate">Hunters Game Schedule</h1>
         </div>
@@ -312,9 +312,9 @@
     </div>
   </div>
 
-  <!-- GitHub Sync Modal -->
+  <!-- GitHub Sync Modal (AES-GCM Encrypted Token) -->
   <div id="githubModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/70 backdrop-blur-sm p-4">
-    <div class="w-full max-w-md bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl overflow-hidden">
+    <div class="w-full max-w-md bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col">
       <div class="px-5 py-4 border-b border-slate-800 flex items-center justify-between">
         <h3 class="text-base font-semibold text-white">GitHub Auto-Sync (games.json)</h3>
         <button id="closeGithubModalBtn" class="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800 transition-colors">
@@ -323,10 +323,11 @@
           </svg>
         </button>
       </div>
-      <form id="githubForm" class="p-5 space-y-3.5">
-        <p class="text-xs text-slate-400 leading-relaxed">
-          Everyone loads <code class="text-cyan-300">games.json</code> from your repo. Add a Fine-Grained PAT (scoped only to <strong>Contents: Read &amp; Write</strong> on this repo) to auto-commit changes from your browser. Your token stays only in this browser's localStorage.
-        </p>
+      <form id="githubForm" class="p-5 space-y-3.5 overflow-y-auto">
+        <div class="rounded-xl bg-slate-950/80 border border-slate-800 px-3.5 py-2.5 flex items-center justify-between gap-2">
+          <span class="text-xs text-slate-300">Vault Status:</span>
+          <span id="ghVaultBadge" class="text-xs font-semibold text-slate-400">No token saved</span>
+        </div>
 
         <div class="grid grid-cols-2 gap-2.5">
           <div>
@@ -351,28 +352,44 @@
         </div>
 
         <div>
-          <label for="ghTokenInput" class="block text-xs font-medium text-slate-300 mb-1">Fine-Grained PAT (Admin only)</label>
+          <label for="ghTokenInput" class="block text-xs font-medium text-slate-300 mb-1">Fine-Grained PAT (only needed when setting/updating)</label>
           <input type="password" id="ghTokenInput" placeholder="github_pat_..." autocomplete="off" class="w-full rounded-xl bg-slate-950 border border-slate-700 px-3 py-2 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-cyan-500" />
+        </div>
+
+        <div>
+          <label for="ghPassphraseInput" class="block text-xs font-medium text-slate-300 mb-1">Passphrase (encrypts/unlocks PAT — never stored)</label>
+          <div class="flex gap-2">
+            <input type="password" id="ghPassphraseInput" placeholder="Enter passphrase..." autocomplete="off" class="flex-1 rounded-xl bg-slate-950 border border-slate-700 px-3 py-2 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-cyan-500" />
+            <button type="button" id="ghUnlockBtn" class="hidden px-3 py-2 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-500/40 text-xs font-semibold text-emerald-300 transition-colors">
+              Unlock
+            </button>
+            <button type="button" id="ghLockBtn" class="hidden px-3 py-2 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/40 text-xs font-semibold text-amber-300 transition-colors">
+              Lock
+            </button>
+          </div>
         </div>
 
         <label class="flex items-center gap-2.5 cursor-pointer select-none pt-1">
           <input type="checkbox" id="ghAutoPushInput" class="w-4 h-4 rounded border-slate-600 bg-slate-950 text-cyan-500 focus:ring-cyan-500" />
-          <span class="text-xs text-slate-300">Auto-push to GitHub whenever I add, edit, or delete</span>
+          <span class="text-xs text-slate-300">Auto-push when unlocked</span>
         </label>
 
         <div id="ghLastSyncInfo" class="text-[11px] text-slate-500"></div>
 
         <div class="pt-2 flex flex-wrap items-center justify-between gap-2 border-t border-slate-800">
-          <div class="flex items-center gap-2">
-            <button type="button" id="ghPullBtn" class="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-medium text-slate-200 transition-colors">
-              Pull Now
+          <div class="flex items-center gap-1.5">
+            <button type="button" id="ghPullBtn" class="px-2.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-medium text-slate-200 transition-colors">
+              Pull
             </button>
-            <button type="button" id="ghPushBtn" class="px-3 py-2 rounded-xl bg-indigo-500/20 hover:bg-indigo-500/30 border border-indigo-500/40 text-xs font-medium text-indigo-300 transition-colors">
-              Push Now
+            <button type="button" id="ghPushBtn" class="px-2.5 py-2 rounded-xl bg-indigo-500/20 hover:bg-indigo-500/30 border border-indigo-500/40 text-xs font-medium text-indigo-300 transition-colors">
+              Push
+            </button>
+            <button type="button" id="ghForgetBtn" class="hidden px-2.5 py-2 rounded-xl bg-rose-500/15 hover:bg-rose-500/25 text-xs font-medium text-rose-300 transition-colors">
+              Forget
             </button>
           </div>
           <button type="submit" class="px-4 py-2 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 text-xs font-semibold transition-colors">
-            Save Settings
+            Encrypt &amp; Save
           </button>
         </div>
       </form>
@@ -390,8 +407,8 @@
        ========================================================= */
     const SCHEDULE_CONFIG = {
       title: 'Hunters Game Schedule',
-      iconPath: 'art/SilverWolf.webp',
-      backgroundPath: 'art/GameBg.webp',
+      iconPath: '../art/SilverWolf.webp',
+      backgroundPath: '../art/GameBg.webp',
       github: {
         owner: 'SaberAltered',
         repo: 'MHS_SCHEDULE',
@@ -491,6 +508,7 @@
       }
 
       let ghConfig = loadGhConfig();
+      let sessionToken = ''; // Decrypted PAT kept ONLY in RAM for this tab
       let ghSyncing = false;
 
       function loadGhConfig() {
@@ -499,13 +517,16 @@
           repo: SCHEDULE_CONFIG.github.repo,
           branch: SCHEDULE_CONFIG.github.branch,
           path: SCHEDULE_CONFIG.github.path,
-          token: '',
+          encryptedToken: null, // { ct, iv, salt }
           autoPush: true,
         };
         try {
           const raw = localStorage.getItem(GH_CONFIG_KEY);
           if (raw) {
-            return { ...defaults, ...JSON.parse(raw) };
+            const parsed = JSON.parse(raw);
+            // Strip any legacy plaintext token if present
+            delete parsed.token;
+            return { ...defaults, ...parsed };
           }
         } catch (e) {}
         return defaults;
@@ -515,6 +536,66 @@
         try {
           localStorage.setItem(GH_CONFIG_KEY, JSON.stringify(ghConfig));
         } catch (e) {}
+      }
+
+      function bytesToB64(bytes) {
+        let bin = '';
+        for (let i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
+        return btoa(bin);
+      }
+
+      function b64ToBytes(b64) {
+        const bin = atob(b64);
+        const bytes = new Uint8Array(bin.length);
+        for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+        return bytes;
+      }
+
+      async function deriveAesKey(passphrase, saltBytes) {
+        const enc = new TextEncoder();
+        const keyMaterial = await crypto.subtle.importKey(
+          'raw',
+          enc.encode(passphrase),
+          'PBKDF2',
+          false,
+          ['deriveKey']
+        );
+        return crypto.subtle.deriveKey(
+          { name: 'PBKDF2', salt: saltBytes, iterations: 100000, hash: 'SHA-256' },
+          keyMaterial,
+          { name: 'AES-GCM', length: 256 },
+          false,
+          ['encrypt', 'decrypt']
+        );
+      }
+
+      async function encryptToken(token, passphrase) {
+        const salt = crypto.getRandomValues(new Uint8Array(16));
+        const iv = crypto.getRandomValues(new Uint8Array(12));
+        const key = await deriveAesKey(passphrase, salt);
+        const ctBuf = await crypto.subtle.encrypt(
+          { name: 'AES-GCM', iv },
+          key,
+          new TextEncoder().encode(token)
+        );
+        return {
+          ct: bytesToB64(new Uint8Array(ctBuf)),
+          iv: bytesToB64(iv),
+          salt: bytesToB64(salt),
+        };
+      }
+
+      async function decryptToken(encryptedObj, passphrase) {
+        const salt = b64ToBytes(encryptedObj.salt);
+        const iv = b64ToBytes(encryptedObj.iv);
+        const ct = b64ToBytes(encryptedObj.ct);
+        const key = await deriveAesKey(passphrase, salt);
+        const plainBuf = await crypto.subtle.decrypt(
+          { name: 'AES-GCM', iv },
+          key,
+          ct
+        );
+        return new TextDecoder().decode(plainBuf);
       }
 
       function setSyncIndicator(status, label) {
@@ -546,7 +627,7 @@
           setSyncIndicator('syncing', 'Syncing...');
           const res = await fetch(rawUrl, { cache: 'no-store' });
           if (!res.ok) {
-            setSyncIndicator('idle', ghConfig.token ? 'Ready' : 'GitHub Sync');
+            setSyncIndicator('idle', sessionToken ? 'Unlocked' : (ghConfig.encryptedToken ? 'Locked' : 'Configure'));
             if (!silent) showToast(`No ${ghConfig.path} found yet (HTTP ${res.status})`);
             return false;
           }
@@ -571,8 +652,8 @@
       }
 
       async function pushToGitHub(silent) {
-        if (!ghConfig.token) {
-          if (!silent) showToast('Add your GitHub token in GitHub Sync first.');
+        if (!sessionToken) {
+          if (!silent) showToast(ghConfig.encryptedToken ? 'Unlock GitHub Sync with your passphrase first.' : 'Add & encrypt your GitHub token first.');
           return false;
         }
         if (ghSyncing) return false;
@@ -580,7 +661,7 @@
         setSyncIndicator('syncing', 'Pushing...');
         const apiUrl = `https://api.github.com/repos/${encodeURIComponent(ghConfig.owner)}/${encodeURIComponent(ghConfig.repo)}/contents/${ghConfig.path}`;
         const headers = {
-          Authorization: `Bearer ${ghConfig.token}`,
+          Authorization: `Bearer ${sessionToken}`,
           Accept: 'application/vnd.github+json',
           'Content-Type': 'application/json',
         };
@@ -630,7 +711,7 @@
         } catch (e) {
           // ignore storage errors
         }
-        if (!skipAutoPush && ghConfig.token && ghConfig.autoPush) {
+        if (!skipAutoPush && sessionToken && ghConfig.autoPush) {
           pushToGitHub(true);
         }
       }
@@ -1209,19 +1290,52 @@
 
 
       // GitHub Sync Modal Events
+      function updateVaultUI() {
+        const badge = document.getElementById('ghVaultBadge');
+        const unlockBtn = document.getElementById('ghUnlockBtn');
+        const lockBtn = document.getElementById('ghLockBtn');
+        const forgetBtn = document.getElementById('ghForgetBtn');
+        if (sessionToken) {
+          badge.textContent = 'Unlocked (active in this tab only)';
+          badge.className = 'text-xs font-semibold text-emerald-400';
+          unlockBtn.classList.add('hidden');
+          lockBtn.classList.remove('hidden');
+          forgetBtn.classList.toggle('hidden', !ghConfig.encryptedToken);
+          setSyncIndicator('synced', 'Unlocked');
+        } else if (ghConfig.encryptedToken) {
+          badge.textContent = 'Encrypted & Locked';
+          badge.className = 'text-xs font-semibold text-amber-300';
+          unlockBtn.classList.remove('hidden');
+          lockBtn.classList.add('hidden');
+          forgetBtn.classList.remove('hidden');
+          setSyncIndicator('idle', 'Locked');
+        } else {
+          badge.textContent = 'No token saved';
+          badge.className = 'text-xs font-semibold text-slate-400';
+          unlockBtn.classList.add('hidden');
+          lockBtn.classList.add('hidden');
+          forgetBtn.classList.add('hidden');
+          setSyncIndicator('idle', 'Configure');
+        }
+      }
+
       function openGithubModal() {
         document.getElementById('ghOwnerInput').value = ghConfig.owner;
         document.getElementById('ghRepoInput').value = ghConfig.repo;
         document.getElementById('ghBranchInput').value = ghConfig.branch;
         document.getElementById('ghPathInput').value = ghConfig.path;
-        document.getElementById('ghTokenInput').value = ghConfig.token || '';
+        document.getElementById('ghTokenInput').value = '';
+        document.getElementById('ghPassphraseInput').value = '';
         document.getElementById('ghAutoPushInput').checked = !!ghConfig.autoPush;
+        updateVaultUI();
         const modal = document.getElementById('githubModal');
         modal.classList.remove('hidden');
         modal.classList.add('flex');
       }
 
       function closeGithubModal() {
+        document.getElementById('ghTokenInput').value = '';
+        document.getElementById('ghPassphraseInput').value = '';
         const modal = document.getElementById('githubModal');
         modal.classList.add('hidden');
         modal.classList.remove('flex');
@@ -1230,31 +1344,89 @@
       document.getElementById('githubSyncBtn').addEventListener('click', () => { closeSettingsModal(); openGithubModal(); });
       document.getElementById('closeGithubModalBtn').addEventListener('click', closeGithubModal);
 
-      document.getElementById('githubForm').addEventListener('submit', (e) => {
-        e.preventDefault();
-        ghConfig = {
-          owner: document.getElementById('ghOwnerInput').value.trim() || 'SaberAltered',
-          repo: document.getElementById('ghRepoInput').value.trim() || 'MHS_SCHEDULE',
-          branch: document.getElementById('ghBranchInput').value.trim() || 'main',
-          path: document.getElementById('ghPathInput').value.trim() || 'games.json',
-          token: document.getElementById('ghTokenInput').value.trim(),
-          autoPush: document.getElementById('ghAutoPushInput').checked,
-        };
+      document.getElementById('ghUnlockBtn').addEventListener('click', async () => {
+        const pass = document.getElementById('ghPassphraseInput').value;
+        if (!pass || !ghConfig.encryptedToken) {
+          showToast('Enter your passphrase to unlock.');
+          return;
+        }
+        try {
+          sessionToken = await decryptToken(ghConfig.encryptedToken, pass);
+          document.getElementById('ghPassphraseInput').value = '';
+          updateVaultUI();
+          showToast('GitHub Sync unlocked for this tab');
+        } catch (err) {
+          showToast('Incorrect passphrase');
+        }
+      });
+
+      document.getElementById('ghLockBtn').addEventListener('click', () => {
+        sessionToken = '';
+        updateVaultUI();
+        showToast('Token cleared from memory');
+      });
+
+      document.getElementById('ghForgetBtn').addEventListener('click', () => {
+        sessionToken = '';
+        ghConfig.encryptedToken = null;
         saveGhConfig();
-        setSyncIndicator(ghConfig.token ? 'synced' : 'idle', ghConfig.token ? 'Ready' : 'GitHub Sync');
+        updateVaultUI();
+        showToast('Encrypted token removed');
+      });
+
+      document.getElementById('githubForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        ghConfig.owner = document.getElementById('ghOwnerInput').value.trim() || 'SaberAltered';
+        ghConfig.repo = document.getElementById('ghRepoInput').value.trim() || 'MHS_SCHEDULE';
+        ghConfig.branch = document.getElementById('ghBranchInput').value.trim() || 'main';
+        ghConfig.path = document.getElementById('ghPathInput').value.trim() || 'games.json';
+        ghConfig.autoPush = document.getElementById('ghAutoPushInput').checked;
+
+        const newToken = document.getElementById('ghTokenInput').value.trim();
+        const pass = document.getElementById('ghPassphraseInput').value;
+
+        if (newToken) {
+          if (!pass || pass.length < 6) {
+            showToast('Use a passphrase of at least 6 characters to encrypt your token.');
+            return;
+          }
+          try {
+            ghConfig.encryptedToken = await encryptToken(newToken, pass);
+            sessionToken = newToken;
+          } catch (err) {
+            showToast('Encryption failed in this browser');
+            return;
+          }
+        } else if (pass && ghConfig.encryptedToken && !sessionToken) {
+          try {
+            sessionToken = await decryptToken(ghConfig.encryptedToken, pass);
+          } catch (err) {
+            showToast('Incorrect passphrase');
+            return;
+          }
+        }
+
+        saveGhConfig();
+        updateVaultUI();
         closeGithubModal();
-        showToast('GitHub sync settings saved');
+        showToast('Encrypted settings saved');
       });
 
       document.getElementById('ghPullBtn').addEventListener('click', () => pullFromGitHub(false));
-      document.getElementById('ghPushBtn').addEventListener('click', () => {
-        ghConfig.owner = document.getElementById('ghOwnerInput').value.trim() || ghConfig.owner;
-        ghConfig.repo = document.getElementById('ghRepoInput').value.trim() || ghConfig.repo;
-        ghConfig.branch = document.getElementById('ghBranchInput').value.trim() || ghConfig.branch;
-        ghConfig.path = document.getElementById('ghPathInput').value.trim() || ghConfig.path;
-        ghConfig.token = document.getElementById('ghTokenInput').value.trim();
-        ghConfig.autoPush = document.getElementById('ghAutoPushInput').checked;
-        saveGhConfig();
+      document.getElementById('ghPushBtn').addEventListener('click', async () => {
+        if (!sessionToken && ghConfig.encryptedToken) {
+          const pass = document.getElementById('ghPassphraseInput').value;
+          if (pass) {
+            try {
+              sessionToken = await decryptToken(ghConfig.encryptedToken, pass);
+              document.getElementById('ghPassphraseInput').value = '';
+              updateVaultUI();
+            } catch (err) {
+              showToast('Incorrect passphrase');
+              return;
+            }
+          }
+        }
         pushToGitHub(false);
       });
 
@@ -1268,7 +1440,7 @@
 
       // Initial render & background pull from games.json
       renderAll();
-      if (ghConfig.token) setSyncIndicator('idle', 'Ready');
+      updateVaultUI();
       pullFromGitHub(true);
     })();
   </script>
