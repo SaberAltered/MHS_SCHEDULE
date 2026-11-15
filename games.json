@@ -23,6 +23,12 @@
       "name": "Honkai: Star Rail",
       "platform": "PC",
       "color": "violet"
+    },
+    {
+      "id": "g-1794754406157",
+      "name": "Nothing",
+      "platform": "Nothing",
+      "color": "cyan"
     }
   ],
   "sessions": [
