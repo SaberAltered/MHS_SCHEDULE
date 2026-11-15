@@ -145,6 +145,16 @@
       "notes": "NEW AHA STORYLINE",
       "status": "planned",
       "repeatWeekly": true
+    },
+    {
+      "id": "s-1794754420417",
+      "gameId": "g-1794754406157",
+      "date": "2026-11-21",
+      "startTime": "12:00",
+      "endTime": "21:30",
+      "notes": "",
+      "status": "planned",
+      "repeatWeekly": false
     }
   ]
 }
