@@ -155,6 +155,16 @@
       "notes": "",
       "status": "planned",
       "repeatWeekly": false
+    },
+    {
+      "id": "s-1794932264292",
+      "gameId": "g-lone-echo",
+      "date": "2026-11-21",
+      "startTime": "19:30",
+      "endTime": "21:30",
+      "notes": "Make Up Dat",
+      "status": "planned",
+      "repeatWeekly": false
     }
   ]
 }
